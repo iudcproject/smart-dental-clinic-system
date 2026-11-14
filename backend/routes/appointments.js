@@ -1,0 +1,150 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../config/db');
+const { isAuthenticated } = require('../middleware/auth');
+
+// جلب مواعيد المستخدم الحالي حسب دوره (مريض، طبيب، أو أدمن)
+router.get('/my', isAuthenticated, (req, res) => {
+  try {
+    const user = req.session.user;
+    let query = `
+      SELECT a.*, 
+             p.name as patient_name, p.phone as patient_phone,
+             d.name as doctor_name, d.specialty as doctor_specialty,
+             s.name as service_name, s.price as service_price, s.duration as service_duration
+      FROM appointments a
+      JOIN users p ON a.patient_id = p.id
+      JOIN users d ON a.doctor_id = d.id
+      LEFT JOIN dental_services s ON a.service_id = s.id
+    `;
+
+    if (user.role === 'patient') {
+      query += ' WHERE a.patient_id = ? ORDER BY a.date DESC, a.start_time ASC';
+      const appointments = db.prepare(query).all(user.id);
+      return res.json({ appointments });
+    }
+
+    if (user.role === 'doctor') {
+      query += ' WHERE a.doctor_id = ? ORDER BY a.date DESC, a.start_time ASC';
+      const appointments = db.prepare(query).all(user.id);
+      return res.json({ appointments });
+    }
+
+    query += ' ORDER BY a.date DESC, a.start_time ASC';
+    const appointments = db.prepare(query).all();
+    res.json({ appointments });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// جلب جميع المواعيد
+router.get('/', isAuthenticated, (req, res) => {
+  try {
+    const appointments = db.prepare(`
+      SELECT a.*, 
+             p.name as patient_name, p.phone as patient_phone,
+             d.name as doctor_name, d.specialty as doctor_specialty,
+             s.name as service_name, s.price as service_price, s.duration as service_duration
+      FROM appointments a
+      JOIN users p ON a.patient_id = p.id
+      JOIN users d ON a.doctor_id = d.id
+      LEFT JOIN dental_services s ON a.service_id = s.id
+      ORDER BY a.date DESC, a.start_time ASC
+    `).all();
+    res.json({ appointments });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// إنشاء موعد جديد (مع التحقق من شرط الحجز المسبق بـ 3 ساعات)
+router.post('/', isAuthenticated, (req, res) => {
+  try {
+    const user = req.session.user;
+    const { doctor_id, service_id, date, start_time, end_time, notes, patient_id } = req.body;
+
+    if (!doctor_id || !date || !start_time) {
+      return res.status(400).json({ error: 'الطبيب والتاريخ والساعة مطلوبة' });
+    }
+
+    const now = new Date();
+    const [h, m] = start_time.split(':').map(Number);
+    const appointmentDateTime = new Date(date);
+    appointmentDateTime.setHours(h, m, 0, 0);
+
+    const diffHours = (appointmentDateTime - now) / (1000 * 60 * 60);
+    if (diffHours < 3) {
+      return res.status(400).json({ error: 'عذراً، يجب أن يتم حجز الموعد قبل 3 ساعات على الأقل من وقت الزيارة' });
+    }
+
+    const targetPatientId = (user.role === 'patient') ? user.id : patient_id;
+    if (!targetPatientId) {
+      return res.status(400).json({ error: 'المريض مطلوب' });
+    }
+
+    const info = db.prepare(`
+      INSERT INTO appointments (doctor_id, patient_id, service_id, date, start_time, end_time, status, notes)
+      VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
+    `).run(doctor_id, targetPatientId, service_id || null, date, start_time, end_time || start_time, notes || '');
+
+    const newAppt = db.prepare(`
+      SELECT a.*, 
+             p.name as patient_name, p.phone as patient_phone,
+             d.name as doctor_name, d.specialty as doctor_specialty,
+             s.name as service_name, s.price as service_price
+      FROM appointments a
+      JOIN users p ON a.patient_id = p.id
+      JOIN users d ON a.doctor_id = d.id
+      LEFT JOIN dental_services s ON a.service_id = s.id
+      WHERE a.id = ?
+    `).get(info.lastInsertRowid);
+
+    res.status(201).json({ message: 'تم حجز الموعد بنجاح وهو قيد انتظار موافقة الطبيب', appointment: newAppt });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// تحديث حالة الموعد
+router.patch('/:id/status', isAuthenticated, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'confirmed', 'completed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ error: 'حالة الموعد غير صالحة' });
+    }
+
+    db.prepare('UPDATE appointments SET status = ? WHERE id = ?').run(status, id);
+    res.json({ message: 'تم تحديث حالة الموعد بنجاح' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// تحديث ملاحظات الموعد
+router.patch('/:id/notes', isAuthenticated, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+
+    db.prepare('UPDATE appointments SET notes = ? WHERE id = ?').run(notes || '', id);
+    res.json({ message: 'تم تحديث الملاحظات بنجاح' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// حذف موعد
+router.delete('/:id', isAuthenticated, (req, res) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM appointments WHERE id = ?').run(id);
+    res.json({ message: 'تم حذف الموعد بنجاح' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+module.exports = router;
