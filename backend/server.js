@@ -9,7 +9,7 @@ const db = require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 1. الإعدادات الأساسية للطلبات والجلسات
+// 1. الإعدادات الأساسية
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -22,12 +22,12 @@ app.use(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000 // صلاحية الجلسة 24 ساعة
+      maxAge: 24 * 60 * 60 * 1000
     }
   })
 );
 
-// 2. استيراد وتفعيل مسارات الـ API
+// 2. استيراد وتفعيل مسارات الـ API (يجب أن تكون دائماً في الأعلى)
 const authRouter = require('./routes/auth');
 const servicesRouter = require('./routes/services');
 const adminRouter = require('./routes/admin');
@@ -37,6 +37,7 @@ const dentalRouter = require('./routes/dental');
 const profileRouter = require('./routes/profile');
 const aiRouter = require('./routes/ai');
 const settingsRouter = require('./routes/settings');
+const notificationsRouter = require('./routes/notifications');
 
 app.use('/api/auth', authRouter);
 app.use('/api/services', servicesRouter);
@@ -47,8 +48,9 @@ app.use('/api/dental', dentalRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/notifications', notificationsRouter);
 
-// 3. مسار عام لجلب قائمة الأطباء (للصفحة الرئيسية ونموذج الحجز)
+// 3. مسار الأطباء
 app.get('/api/doctors-list', (req, res) => {
   try {
     const doctors = db
@@ -60,11 +62,11 @@ app.get('/api/doctors-list', (req, res) => {
   }
 });
 
-// 4. ربط ملفات الواجهة الأمامية (Frontend)
+// 4. الملفات الثابتة للواجهة الأمامية
 const frontendDir = path.join(__dirname, '../frontend');
 app.use(express.static(frontendDir));
 
-// 5. معالجة الروابط غير الموجودة (صفحة 404 مخصصة أو خطأ JSON)
+// 5. معالجة الروابط غير الموجودة (404) - يجب أن تكون في الأسفل بعد جميع الـ APIs
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'المسار المطلوب غير موجود' });

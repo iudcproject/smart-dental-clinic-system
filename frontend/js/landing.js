@@ -52,29 +52,74 @@
     );
   }
 
+  // دالة جلب وعرض الإعدادات في الصفحة الرئيسية ديناميكياً
   async function loadClinicSettings() {
     try {
       const res = await fetch('/api/settings');
       if (!res.ok) return;
-      const data = await res.json();
-      const settings = data.settings || {};
+      const settings = await res.json();
 
+      // 1. تحديث اسم العيادة وعنوان الصفحة (Title)
       if (settings.clinic_name) {
         document.title = `${settings.clinic_name} لطب الأسنان | عمّان - حجز المواعيد`;
+        document.querySelectorAll('.brand-name, #brand-clinic-name, [data-setting="clinic_name"]').forEach(el => {
+          el.textContent = settings.clinic_name;
+        });
       }
 
-      document.querySelectorAll('[data-setting]').forEach(el => {
-        const key = el.dataset.setting;
-        if (settings[key] !== undefined && settings[key] !== '') {
-          el.textContent = settings[key];
-          if (el.dataset.settingHref === 'tel') {
-            el.href = `tel:${settings[key].replace(/\s+/g, '')}`;
-          } else if (el.dataset.settingHref === 'mailto') {
-            el.href = `mailto:${settings[key]}`;
+      // 2. تحديث العنوان
+      if (settings.clinic_address) {
+        document.querySelectorAll('[data-setting="clinic_address"], #footer-address, .clinic-address').forEach(el => {
+          el.textContent = settings.clinic_address;
+        });
+      }
+
+      // 3. تحديث الهاتف المباشر
+      if (settings.clinic_phone) {
+        document.querySelectorAll('[data-setting="clinic_phone"], #footer-phone, .clinic-phone').forEach(el => {
+          el.textContent = settings.clinic_phone;
+          if (el.tagName === 'A') {
+            el.href = `tel:${settings.clinic_phone.replace(/\s+/g, '')}`;
+          }
+        });
+      }
+
+      // 4. تحديث البريد الإلكتروني
+      if (settings.clinic_email) {
+        document.querySelectorAll('[data-setting="clinic_email"], #footer-email, .clinic-email').forEach(el => {
+          el.textContent = settings.clinic_email;
+          if (el.tagName === 'A') {
+            el.href = `mailto:${settings.clinic_email}`;
+          }
+        });
+      }
+
+      // 5. تحديث ساعات العمل وأيام الدوام (بما فيها الأيام الأساسية واليوم المخصص مثل الجمعة)
+      const hoursContainers = document.querySelectorAll('[data-setting="working_hours"], #footer-working-hours, .clinic-working-hours');
+      if (hoursContainers.length > 0) {
+        let workingText = '';
+        const dayFrom = settings.work_days_from || 'السبت';
+        const dayTo = settings.work_days_to || 'الخميس';
+        const hours = settings.working_hours || '09:00 - 20:00';
+
+        workingText = `${dayFrom} إلى ${dayTo}: ${hours}`;
+
+        if (settings.special_day) {
+          if (settings.special_status === 'closed') {
+            workingText += ` (${settings.special_day} عطلة / مغلق)`;
+          } else if (settings.special_status === 'custom' && settings.special_hours) {
+            workingText += ` | ${settings.special_day}: ${settings.special_hours}`;
           }
         }
-      });
-    } catch (e) {}
+
+        hoursContainers.forEach(el => {
+          el.textContent = workingText;
+        });
+      }
+
+    } catch (e) {
+      console.error("Error loading public settings:", e);
+    }
   }
 
   async function checkAuthStatus() {
@@ -111,12 +156,11 @@
       const data = await res.json();
       let services = data.services || [];
 
-      // خدمات افتراضية أساسية في حال لم تكن هناك خدمات مضافة لتجنب الفراغات المزعجة
       if (services.length === 0) {
         services = [
-          { id: 1, name: 'تنظيف وإزالة الجير', description: 'تنظيف الأسنان من التصبغات والجير وتلميعها للحفاظ على صحة اللثة', duration: 30 },
-          { id: 2, name: 'حشو تجميلي (كومبوزيت)', description: 'علاج التسوس وحشو الأسنان بمواد تجميلية مطابقة للون السن الطبيعي', duration: 45 },
-          { id: 3, name: 'سحب عصب (معالجة لبية)', description: 'تنظيف قناة الجذور وعلاج التهاب العصب بأحدث التقنيات وبدون ألم', duration: 60 }
+          { id: 1, name: 'تنظيف وإزالة الجير', description: 'تنظيف الأسنان من التصبغات والجير وتلميعها للحفاظ على صحة اللثة', duration: 30, price: 15 },
+          { id: 2, name: 'حشو تجميلي (كومبوزيت)', description: 'علاج التسوس وحشو الأسنان بمواد تجميلية مطابقة للون السن الطبيعي', duration: 45, price: 30 },
+          { id: 3, name: 'سحب عصب (معالجة لبية)', description: 'تنظيف قناة الجذور وعلاج التهاب العصب بأحدث التقنيات وبدون ألم', duration: 60, price: 50 }
         ];
       }
 
@@ -125,7 +169,7 @@
           services.map(s => ({
             value: s.id,
             label: s.name,
-            meta: `${s.duration || 30} دقيقة` // إخفاء الأسعار وإظهار المدة فقط
+            meta: `${s.duration || 30} دقيقة`
           }))
         );
       }
@@ -243,7 +287,6 @@
       const start_time = document.getElementById('booking-time').value;
       const notes = document.getElementById('booking-notes').value.trim();
 
-      // إلزام تسجيل الدخول أولاً قبل السماح بأي خطوة حجز
       if (!currentUser) {
         sessionStorage.setItem(
           'pending_booking',

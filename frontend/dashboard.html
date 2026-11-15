@@ -240,7 +240,25 @@
           <h1 id="page-title" style="margin: 0; font-size: var(--text-lg);">لوحة التحكم</h1>
           <span id="user-role-badge" style="font-size: var(--text-xs); color: var(--text-muted);">جاري التحميل...</span>
         </div>
-        <div style="display: flex; align-items: center; gap: var(--space-3);">
+        <div style="display: flex; align-items: center; gap: var(--space-4);">
+          
+          <!-- أيقونة الإشعارات (جرس التنبيهات) -->
+          <div style="position: relative; cursor: pointer;" id="notifications-bell">
+            <span style="font-size: 1.25rem;">🔔</span>
+            <span id="notif-badge" style="position: absolute; top: -5px; right: -8px; background: #ef4444; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 50%; display: none;">0</span>
+            
+            <!-- قائمة منسدلة مصغرة للإشعارات -->
+            <div id="notifications-dropdown" class="card" style="position: absolute; left: 0; top: 2rem; width: 300px; max-height: 350px; overflow-y: auto; display: none; z-index: 200; padding: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+              <div style="font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px; display: flex; justify-content: space-between;">
+                <span>الإشعارات</span>
+                <span style="font-size: 11px; color: var(--text-brand); cursor: pointer;" onclick="markAllNotificationsRead()">تحديد الكل مقروء</span>
+              </div>
+              <div id="notifications-list" style="font-size: 0.85rem; color: var(--text-secondary);">
+                جاري تحميل الإشعارات...
+              </div>
+            </div>
+          </div>
+
           <a href="/" class="btn btn-secondary btn-sm">الرئيسية</a>
           <div id="user-avatar-name" style="font-weight: 600; font-size: var(--text-sm);"></div>
         </div>
@@ -378,31 +396,127 @@
           <h2 style="margin: 0 0 var(--space-4); font-size: var(--text-xl);">إعدادات ومعلومات الصفحة الرئيسية للعيادة</h2>
           <div class="card" style="max-width: 48rem;">
             <form id="clinic-settings-form">
+              
+              <!-- اسم العيادة مع زر تعديل -->
               <div class="form-group">
                 <label class="form-label">اسم العيادة</label>
-                <input type="text" id="set-clinic-name" class="form-input" required>
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="set-clinic-name" class="form-input" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;" placeholder="جاري التحميل...">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditField('set-clinic-name', this)">تعديل</button>
+                </div>
               </div>
+
+              <!-- عنوان العيادة مع زر تعديل -->
               <div class="form-group">
                 <label class="form-label">عنوان العيادة</label>
-                <input type="text" id="set-clinic-address" class="form-input" required>
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="set-clinic-address" class="form-input" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;" placeholder="جاري التحميل...">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditField('set-clinic-address', this)">تعديل</button>
+                </div>
               </div>
-              <div class="form-group">
-                <label class="form-label">ساعات العمل الرسمية</label>
-                <input type="text" id="set-working-hours" class="form-input" required>
+
+              <!-- إعدادات أيام وساعات العمل (جديد) -->
+              <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: var(--space-4) 0;">
+              <h3 style="font-size: var(--text-base); margin-bottom: var(--space-3);">جدول أيام وأوقات العمل الرسمية</h3>
+              
+              <!-- الأيام العادية (مثلاً السبت إلى الخميس) -->
+              <div style="background: var(--surface-subtle); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <label class="form-label" style="font-weight: 700; color: var(--text-brand);">أيام العمل الأساسية</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+                  <div>
+                    <label style="font-size: 12px;">من يوم:</label>
+                    <select id="set-day-from" class="form-input">
+                      <option value="السبت">السبت</option>
+                      <option value="الأحد">الأحد</option>
+                      <option value="الإثنين">الإثنين</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 12px;">إلى يوم:</label>
+                    <select id="set-day-to" class="form-input">
+                      <option value="الخميس" selected>الخميس</option>
+                      <option value="الجمعة">الجمعة</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 12px;">الساعات:</label>
+                    <div style="display: flex; gap: 4px;">
+                      <input type="time" id="set-work-start" class="form-input" required>
+                      <input type="time" id="set-work-end" class="form-input" required>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              <!-- يوم خاص (مثلاً يوم الجمعة أو عطلة) -->
+              <div style="background: var(--surface-subtle); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <label class="form-label" style="font-weight: 700; color: var(--text-brand);">يوم مخصص (مثل يوم الجمعة)</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem; align-items: center;">
+                  <div>
+                    <label style="font-size: 12px;">اليوم:</label>
+                    <input type="text" id="set-special-day" class="form-input" value="الجمعة">
+                  </div>
+                  <div>
+                    <label style="font-size: 12px;">الحالة / الأوقات:</label>
+                    <select id="set-special-status" class="form-input" onchange="handleSpecialStatus(this.value)">
+                      <option value="closed">مغلق تماماً</option>
+                      <option value="custom">أوقات محددة...</option>
+                    </select>
+                  </div>
+                  <div id="special-hours-div" style="display: none;">
+                    <label style="font-size: 12px;">الساعات:</label>
+                    <div style="display: flex; gap: 4px;">
+                      <input type="time" id="set-special-start" class="form-input">
+                      <input type="time" id="set-special-end" class="form-input">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- رقم الهاتف مع رموز الدول -->
               <div class="form-group">
                 <label class="form-label">رقم الهاتف</label>
-                <input type="text" id="set-clinic-phone" class="form-input" dir="ltr" required>
+                <div style="display: flex; gap: 0.5rem;" dir="ltr">
+                  <select id="set-phone-prefix" class="form-input" style="width: 140px;">
+                    <option value="+962">+962 (الأردن)</option>
+                    <option value="+966">+966 (السعودية)</option>
+                    <option value="+963">+963 (سوريا)</option>
+                    <option value="+970">+970 (فلسطين)</option>
+                    <option value="+971">+971 (الإمارات)</option>
+                    <option value="+20">+20 (مصر)</option>
+                  </select>
+                  <input type="tel" id="set-clinic-phone" class="form-input" placeholder="7xxxxxxxx" required style="text-align: right;">
+                </div>
+                <small style="color: var(--text-muted); display: block; margin-top: 4px;">أدخل الرقم بدون الصفر الأول</small>
               </div>
+
+              <!-- البريد الإلكتروني مع زر تعديل -->
               <div class="form-group">
                 <label class="form-label">البريد الإلكتروني</label>
-                <input type="email" id="set-clinic-email" class="form-input" dir="ltr" required>
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="email" id="set-clinic-email" class="form-input" placeholder="example@domain.com" dir="ltr" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditField('set-clinic-email', this)">تعديل</button>
+                </div>
               </div>
+
+              <!-- الحد الأدنى لساعات الحجز المسبق -->
               <div class="form-group">
                 <label class="form-label">الحد الأدنى لساعات الحجز المسبق</label>
-                <input type="number" id="set-min-hours" class="form-input" min="1" max="24" required>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <select id="set-min-hours-select" class="form-input" onchange="handleMinHoursChange(this.value)">
+                    <option value="1">ساعة واحدة (1)</option>
+                    <option value="2">ساعتان (2)</option>
+                    <option value="3">3 ساعات (افتراضي)</option>
+                    <option value="6">6 ساعات</option>
+                    <option value="12">12 ساعة</option>
+                    <option value="24">24 ساعة (يوم كامل)</option>
+                    <option value="custom">⚙️ تخصيص (إدخال يدوي)...</option>
+                  </select>
+                  <input type="number" id="set-min-hours-custom" class="form-input" min="1" max="168" placeholder="عدد الساعات" style="display: none; width: 150px;" dir="ltr">
+                </div>
               </div>
-              <button type="submit" class="btn btn-primary">حفظ إعدادات الصفحة الرئيسية</button>
+
+              <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">حفظ وتحديث الإعدادات المعدلة</button>
             </form>
           </div>
         </section>
@@ -567,6 +681,47 @@
         bindActions();
       });
 
+      // جلب بيانات الملف الشخصي
+      async function loadProfileForm() {
+        try {
+          if (currentUser) {
+            document.getElementById('prof-name').value = currentUser.name || '';
+            document.getElementById('prof-email').value = currentUser.email || '';
+            document.getElementById('prof-phone').value = currentUser.phone || '';
+          }
+        } catch (e) {
+          console.error("Error loading profile:", e);
+        }
+      }
+
+      // معالجة حفظ تعديلات الملف الشخصي
+      document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('prof-name').value,
+          email: document.getElementById('prof-email').value,
+          phone: document.getElementById('prof-phone').value,
+          current_password: document.getElementById('prof-curr-pass').value,
+          new_password: document.getElementById('prof-new-pass').value
+        };
+
+        try {
+          const res = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'تعذر تحديث الملف الشخصي');
+
+          ClinicUI.showToast('تم تحديث الملف الشخصي بنجاح');
+          document.getElementById('prof-curr-pass').value = '';
+          document.getElementById('prof-new-pass').value = '';
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      });
+
       async function checkAuth() {
         try {
           const res = await fetch('/api/auth/me');
@@ -580,6 +735,7 @@
 
           buildSidebarMenu(currentUser.role);
           checkPatientBookingRole();
+          fetchNotifications(); // <--- أضف هذا السطر هنا ليتم جلب الإشعارات فور فتح الداشبورد
         } catch (e) {
           window.location.href = '/login.html';
         }
@@ -908,6 +1064,74 @@
         }
       }
 
+      // جلب الإشعارات عند تحميل لوحة التحكم
+      async function fetchNotifications() {
+        try {
+          const res = await fetch('/api/notifications');
+          const data = await res.json();
+          const list = data.notifications || [];
+          const unreadCount = data.unreadCount || 0;
+
+          const badge = document.getElementById('notif-badge');
+          if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+
+          const listContainer = document.getElementById('notifications-list');
+          if (list.length === 0) {
+            listContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1rem;">لا توجد إشعارات حالياً.</div>`;
+            return;
+          }
+
+          listContainer.innerHTML = list.map(n => `
+            <div style="padding: 8px; border-bottom: 1px solid var(--border-subtle); background: ${n.is_read ? 'transparent' : 'var(--surface-brand-tint, #eff6ff)'}; border-radius: 4px; margin-bottom: 4px;">
+              <div style="font-weight: 600; color: var(--text-primary);">${ClinicUI.escapeHtml(n.title)}</div>
+              <div>${ClinicUI.escapeHtml(n.message)}</div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">${n.created_at}</div>
+            </div>
+          `).join('');
+
+        } catch (e) {
+          console.error("Error fetching notifications", e);
+        }
+      }
+
+      // تحديد كافة الإشعارات كمقروءة
+      window.markAllNotificationsRead = async function() {
+        try {
+          await fetch('/api/notifications/read-all', { method: 'PATCH' });
+          fetchNotifications();
+          ClinicUI.showToast('تم تحديث كافة الإشعارات كمقروءة');
+        } catch (e) {
+          console.error("Error marking notifications as read", e);
+        }
+      };
+
+      // إظهار/إخفاء قائمة الإشعارات عند الضغط على الجرس
+      document.getElementById('notifications-bell')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dropdown = document.getElementById('notifications-dropdown');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        if (dropdown.style.display === 'block') {
+          fetchNotifications(); // تحديث القائمة عند الفتح
+        }
+      });
+
+      // إغلاق القائمة عند النقر خارجها
+      window.addEventListener('click', () => {
+        const dropdown = document.getElementById('notifications-dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+      });
+
+      // تحديث الإشعارات تلقائياً كل دقيقة
+      setInterval(fetchNotifications, 60000);
+
+      // استدعاء الدالة أول ما تفتح الداشبورد (داخل DOMContentLoaded أو بعد الـ Auth)
+      // أضف استدعاء fetchNotifications(); داخل دالة checkAuth أو DOMContentLoaded
+
       window.deleteDentalRecord = async function(id) {
         if (!confirm('هل أنت متأكد من حذف هذا السجل الطبي؟')) return;
         try {
@@ -1094,6 +1318,187 @@
         });
       }
     })();
+
+    // دالة فتح وإغلاق الحقل عند الضغط على زر "تعديل"
+    window.toggleEditField = function(id, btn) {
+      const input = document.getElementById(id);
+      if (input.hasAttribute('readonly')) {
+        input.removeAttribute('readonly');
+        input.style.backgroundColor = '';
+        input.style.cursor = '';
+        input.focus();
+        btn.textContent = 'إقفال';
+        btn.classList.add('btn-primary');
+        btn.classList.remove('btn-secondary');
+      } else {
+        input.setAttribute('readonly', 'true');
+        input.style.backgroundColor = 'var(--surface-subtle)';
+        input.style.cursor = 'not-allowed';
+        btn.textContent = 'تعديل';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+      }
+    };
+
+    // التحكم بإظهار أوقات اليوم المخصص إذا لم يكن مغلقاً
+    window.handleSpecialStatus = function(val) {
+      const div = document.getElementById('special-hours-div');
+      if (val === 'custom') {
+        div.style.display = 'block';
+      } else {
+        div.style.display = 'none';
+      }
+    };
+
+    // إدارة إظهار وإخفاء حقل التخصيص اليدوي لساعات الحجز
+    window.handleMinHoursChange = function(val) {
+      const customInput = document.getElementById('set-min-hours-custom');
+      if (val === 'custom') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+      }
+    };
+
+    // جلب بيانات الإعدادات وعرضها في الحقول تلقائياً
+    async function loadClinicSettingsForm() {
+      try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (data) {
+          if (data.clinic_name) document.getElementById('set-clinic-name').value = data.clinic_name;
+          if (data.clinic_address) document.getElementById('set-clinic-address').value = data.clinic_address;
+          
+          if (data.work_days_from) document.getElementById('set-day-from').value = data.work_days_from;
+          if (data.work_days_to) document.getElementById('set-day-to').value = data.work_days_to;
+
+          if (data.working_hours) {
+            const parts = data.working_hours.split('-');
+            if (parts.length === 2) {
+              document.getElementById('set-work-start').value = parts[0].trim();
+              document.getElementById('set-work-end').value = parts[1].trim();
+            }
+          }
+
+          if (data.special_day) document.getElementById('set-special-day').value = data.special_day;
+          if (data.special_status) {
+            document.getElementById('set-special-status').value = data.special_status;
+            handleSpecialStatus(data.special_status);
+          }
+          if (data.special_hours && data.special_status === 'custom') {
+            const spParts = data.special_hours.split('-');
+            if (spParts.length === 2) {
+              document.getElementById('set-special-start').value = spParts[0].trim();
+              document.getElementById('set-special-end').value = spParts[1].trim();
+            }
+          }
+
+          let phone = data.clinic_phone || '';
+          const prefixes = ['+962', '+966', '+963', '+970', '+971', '+20'];
+          let matchedPrefix = '+962';
+          let cleanPhone = phone;
+
+          for (const p of prefixes) {
+            if (phone.startsWith(p)) {
+              matchedPrefix = p;
+              cleanPhone = phone.replace(p, '').trim();
+              break;
+            }
+          }
+          document.getElementById('set-phone-prefix').value = matchedPrefix;
+          document.getElementById('set-clinic-phone').value = cleanPhone;
+
+          if (data.clinic_email) document.getElementById('set-clinic-email').value = data.clinic_email;
+
+          const minHours = data.min_booking_hours || '3';
+          const selectElem = document.getElementById('set-min-hours-select');
+          const customInput = document.getElementById('set-min-hours-custom');
+          
+          let foundOption = false;
+          for (let opt of selectElem.options) {
+            if (opt.value === String(minHours)) {
+              foundOption = true;
+              break;
+            }
+          }
+
+          if (foundOption) {
+            selectElem.value = String(minHours);
+            customInput.style.display = 'none';
+          } else {
+            selectElem.value = 'custom';
+            customInput.style.display = 'block';
+            customInput.value = minHours;
+          }
+        }
+      } catch (e) {
+        console.error("Error loading settings:", e);
+      }
+    }
+
+    // معالجة إرسال وحفظ الإعدادات شاملة أيام العمل
+    document.getElementById('clinic-settings-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const phonePrefix = document.getElementById('set-phone-prefix').value;
+      const phoneNum = document.getElementById('set-clinic-phone').value.trim();
+      const fullPhone = phoneNum ? `${phonePrefix} ${phoneNum}` : '';
+
+      const workStart = document.getElementById('set-work-start').value;
+      const workEnd = document.getElementById('set-work-end').value;
+      const workingHours = (workStart && workEnd) ? `${workStart} - ${workEnd}` : '';
+
+      const email = document.getElementById('set-clinic-email').value.trim();
+      
+      if (email) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+          ClinicUI.showToast('يرجى إدخال بريد إلكتروني صحيح', 'error');
+          return;
+        }
+      }
+
+      const selectVal = document.getElementById('set-min-hours-select').value;
+      const finalMinHours = (selectVal === 'custom') ? document.getElementById('set-min-hours-custom').value : selectVal;
+
+      const specialStatus = document.getElementById('set-special-status').value;
+      const spStart = document.getElementById('set-special-start').value;
+      const spEnd = document.getElementById('set-special-end').value;
+      const specialHours = (specialStatus === 'custom' && spStart && spEnd) ? `${spStart} - ${spEnd}` : '';
+
+      const payload = {
+        clinic_name: document.getElementById('set-clinic-name').value,
+        clinic_address: document.getElementById('set-clinic-address').value,
+        work_days_from: document.getElementById('set-day-from').value,
+        work_days_to: document.getElementById('set-day-to').value,
+        working_hours: workingHours,
+        special_day: document.getElementById('set-special-day').value,
+        special_status: specialStatus,
+        special_hours: specialHours,
+        clinic_phone: fullPhone,
+        clinic_email: email,
+        min_booking_hours: finalMinHours
+      };
+
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'تعذر حفظ الإعدادات');
+
+        ClinicUI.showToast('تم تحديث الإعدادات وترحيلها بنجاح');
+        loadClinicSettingsForm();
+      } catch (err) {
+        ClinicUI.showToast(err.message, 'error');
+      }
+    });
+
   </script>
 </body>
 </html>
