@@ -4,12 +4,40 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const db = require('../config/db');
 const { isDoctorOrAdmin } = require('../middleware/auth');
 
-function getGeminiModel() {
+async function generateWithFallback(prompt) {
   if (!process.env.GEMINI_API_KEY) {
-    return null;
+    throw new Error('مفتاح GEMINI_API_KEY غير مضبوط في ملف .env');
   }
+
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  return genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  const candidates = [
+    process.env.GEMINI_MODEL,
+    'gemini-flash-latest',
+    'gemini-3.1-flash-lite',
+    'gemini-3.8-flash'
+  ].filter(Boolean);
+
+  let lastError = null;
+  for (const modelName of candidates) {
+    try {
+      console.log(`[AI] Trying model: ${modelName}...`);
+      const model = genAI.getGenerativeModel(
+        { model: modelName },
+        { timeout: 12000 }
+      );
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      if (text) {
+        console.log(`[AI] Success with model: ${modelName}`);
+        return text;
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`[AI] Model ${modelName} failed: ${err.message}`);
+    }
+  }
+
+  throw lastError || new Error('تعذر الحصول على استجابة من نماذج الذكاء الاصطناعي');
 }
 
 // 1. محلل الأعراض الذكي للمرضى والزوار (يرشح الخدمة المناسبة من خدمات العيادة)
@@ -18,11 +46,6 @@ router.post('/analyze-symptoms', async (req, res) => {
     const { symptoms } = req.body;
     if (!symptoms || symptoms.trim().length < 3) {
       return res.status(400).json({ error: 'يرجى وصف الأعراض بشكل واضح' });
-    }
-
-    const model = getGeminiModel();
-    if (!model) {
-      return res.status(503).json({ error: 'خدمة المساعد الذكي غير مفعلة حالياً (مفتاح API غير مضبوط)' });
     }
 
     const services = db.prepare('SELECT id, name, description, price FROM dental_services').all();
@@ -41,11 +64,10 @@ ${servicesList}
 3. نصيحة سريعة لتخفيف الألم أو العناية لحين موعد الزيارة.
 `;
 
-    const result = await model.generateContent(prompt);
-    const reply = result.response.text();
-
+    const reply = await generateWithFallback(prompt);
     res.json({ analysis: reply });
   } catch (e) {
+    console.error('AI analyze-symptoms error:', e.message);
     res.status(500).json({ error: 'حدث خطأ أثناء تحليل الأعراض: ' + e.message });
   }
 });
@@ -58,11 +80,6 @@ router.post('/care-instructions', isDoctorOrAdmin, async (req, res) => {
       return res.status(400).json({ error: 'نوع العلاج مطلوب لتوليد التعليمات' });
     }
 
-    const model = getGeminiModel();
-    if (!model) {
-      return res.status(503).json({ error: 'خدمة المساعد الذكي غير مفعلة حالياً' });
-    }
-
     const prompt = `
 اكتب تعليمات طبية واضحة ومختصرة لما بعد الجلسة العلاجية لمريض أسنان باللغة العربية:
 - الإجراء العلاجي: ${treatment}
@@ -70,9 +87,10 @@ router.post('/care-instructions', isDoctorOrAdmin, async (req, res) => {
 اجعلها في 4 نقاط عملية سهلة التطبيق للمريض خلال أول 24 ساعة.
 `;
 
-    const result = await model.generateContent(prompt);
-    res.json({ instructions: result.response.text() });
+    const reply = await generateWithFallback(prompt);
+    res.json({ instructions: reply });
   } catch (e) {
+    console.error('AI care-instructions error:', e.message);
     res.status(500).json({ error: 'تعذر توليد التعليمات: ' + e.message });
   }
 });

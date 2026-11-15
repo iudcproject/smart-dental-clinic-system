@@ -1,0 +1,74 @@
+/* ==========================================================================
+   Motion Choreography and Reduced-Motion Parity
+   Only GPU-composited properties (transform, opacity) are animated.
+   ========================================================================== */
+
+@keyframes spin-loader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-skeleton {
+  0%, 100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-enter {
+  animation: slide-up-fade var(--duration-slow) var(--ease-standard) both;
+}
+
+.skeleton-box {
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
+  animation: pulse-skeleton 1.4s ease-in-out infinite;
+}
+
+/* Interactive Login Avatar Transitions */
+.avatar-pupil,
+.avatar-head-group,
+.avatar-hand-left,
+.avatar-hand-right {
+  transition: transform var(--duration-base) var(--ease-standard);
+  transform-origin: center;
+}
+
+.avatar-is-covering .avatar-hand-left {
+  transform: translate(18px, -46px) rotate(-14deg);
+}
+
+.avatar-is-covering .avatar-hand-right {
+  transform: translate(-18px, -46px) rotate(14deg);
+}
+
+/* Strict Reduced Motion Compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-enter {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول وإنشاء حساب | عيادة الابتسامة الذكية لطب الأسنان</title>
+  <meta name="description" content="سجل الدخول إلى حسابك في عيادة الابتسامة الذكية لإدارة مواعيدك وسجلك العلاجي، أو أنشئ حساب مريض جديد خلال ثوانٍ.">
+  <link rel="canonical" href="http://localhost:3000/login.html">
+
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0d9488">
+
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-page">
+
+  <header class="auth-topbar">
+    <div class="container auth-topbar-inner">
+      <a href="/" style="display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 700; color: var(--text-primary);">
+        <span style="width: 2.25rem; height: 2.25rem; border-radius: var(--radius-md); background-color: var(--action-primary-bg); color: var(--text-on-brand); display: inline-flex; align-items: center; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <path d="M12 5.5c-1.5-1.5-3.8-2.5-6-2.5-3 0-5 2.4-5 5.5 0 3.8 1.9 7 3.1 11 .7 2.4 1.5 4.5 3.1 4.5 1.5 0 2-2.2 2.8-4.7.5-1.7 1.3-2.8 2-2.8s1.5 1.1 2 2.8c.8 2.5 1.3 4.7 2.8 4.7 1.6 0 2.4-2.1 3.1-4.5 1.2-4 3.1-7.2 3.1-11 0-3.1-2-5.5-5-5.5-2.2 0-4.5 1-6 2.5z"/>
+          </svg>
+        </span>
+        <span>عيادة الابتسامة الذكية</span>
+      </a>
+      <a href="/" class="btn btn-secondary btn-sm">العودة للرئيسية</a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <section class="auth-card animate-enter" aria-labelledby="auth-heading">
+
+      <!-- Real-Time 3D Tooth Dentist inside 3D Dental Clinic Scene -->
+      <div class="avatar-stage-wrapper">
+        <div
+          class="avatar-3d-stage"
+          id="login-avatar-stage"
+          role="button"
+          tabindex="0"
+          aria-label="دكتور أسنان ثلاثي الأبعاد داخل العيادة - حرك المؤشر أو اضغط للتفاعل"
+          title="حرك المؤشر أو اضغط للتفاعل"
+        >
+          <canvas class="avatar-3d-canvas" id="avatar-3d-canvas"></canvas>
+        </div>
+
+        <span class="avatar-status-badge" id="avatar-status-badge" aria-live="polite">يتابع حركتك داخل العيادة</span>
+      </div>
+
+      <h1 class="auth-title" id="auth-heading">بوابة العيادة الإلكترونية</h1>
+      <p class="auth-subtitle" id="auth-subtitle">سجل الدخول لمتابعة مواعيدك وسجلك العلاجي</p>
+
+      <div id="pending-booking-banner" class="alert alert-warning" style="margin-bottom: var(--space-4);" hidden>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>لديك طلب موعد محفوظ؛ سيتم تثبيته تلقائياً فور تسجيل دخولك.</span>
+      </div>
+
+      <!-- Mode Switcher Tabs -->
+      <div class="auth-tabs" role="tablist" aria-label="اختر نوع العملية">
+        <button type="button" role="tab" class="auth-tab-btn" id="tab-login" aria-selected="true" aria-controls="panel-login">
+          تسجيل الدخول
+        </button>
+        <button type="button" role="tab" class="auth-tab-btn" id="tab-register" aria-selected="false" aria-controls="panel-register">
+          حساب مريض جديد
+        </button>
+      </div>
+
+      <!-- 1. Login Form Panel -->
+      <form id="panel-login" class="auth-panel" role="tabpanel" aria-labelledby="tab-login" novalidate>
+        <div class="form-group">
+          <label for="login-email" class="form-label">البريد الإلكتروني</label>
+          <input type="email" id="login-email" class="form-input track-gaze" autocomplete="email" placeholder="name@example.com" dir="ltr" required>
+          <span id="login-email-error" class="form-error-text" role="alert"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password" class="form-label">كلمة المرور</label>
+          <div class="password-field-wrap">
+            <input type="password" id="login-password" class="form-input privacy-secret" autocomplete="current-password" placeholder="أدخل كلمة المرور" required>
+            <button type="button" class="password-toggle-btn" data-target="login-password" aria-label="إظهار أو إخفاء كلمة المرور">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span id="login-password-error" class="form-error-text" role="alert"></span>
+        </div>
+
+        <div class="auth-helper-row">
+          <button type="button" id="show-forgot-btn" class="text-link-btn">نسيت كلمة المرور؟</button>
+        </div>
+
+        <button type="submit" id="login-submit-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+          <span>دخول إلى الحساب</span>
+        </button>
+      </form>
+
+      <!-- 2. Patient Registration Form Panel -->
+      <form id="panel-register" class="auth-panel" role="tabpanel" aria-labelledby="tab-register" hidden novalidate>
+        <div class="form-group">
+          <label for="reg-name" class="form-label">الاسم الكامل</label>
+          <input type="text" id="reg-name" class="form-input track-gaze" autocomplete="name" placeholder="أدخل اسمك الثلاثي" required>
+          <span id="reg-name-error" class="form-error-text" role="alert"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email" class="form-label">البريد الإلكتروني</label>
+          <input type="email" id="reg-email" class="form-input track-gaze" autocomplete="email" placeholder="name@example.com" dir="ltr" required>
+          <span id="reg-email-error" class="form-error-text" role="alert"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-phone" class="form-label">رقم الهاتف (اختياري للتذكير بالمواعيد)</label>
+          <input type="tel" id="reg-phone" class="form-input track-gaze" autocomplete="tel" placeholder="0790000000" dir="ltr">
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password" class="form-label">كلمة المرور (6 أحرف على الأقل)</label>
+          <div class="password-field-wrap">
+            <input type="password" id="reg-password" class="form-input privacy-secret" autocomplete="new-password" placeholder="اختر كلمة مرور قوية" required>
+            <button type="button" class="password-toggle-btn" data-target="reg-password" aria-label="إظهار أو إخفاء كلمة المرور">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span id="reg-password-error" class="form-error-text" role="alert"></span>
+        </div>
+
+        <button type="submit" id="register-submit-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+          <span>إنشاء الحساب والمتابعة</span>
+        </button>
+      </form>
+
+      <!-- 3. Forgot Password Panel -->
+      <form id="panel-forgot" class="auth-panel" hidden novalidate>
+        <div class="form-group">
+          <label for="forgot-email" class="form-label">البريد الإلكتروني المسجل</label>
+          <input type="email" id="forgot-email" class="form-input track-gaze" placeholder="name@example.com" dir="ltr" required>
+          <span id="forgot-email-error" class="form-error-text" role="alert"></span>
+        </div>
+
+        <button type="submit" id="forgot-submit-btn" class="btn btn-primary btn-lg" style="width: 100%; margin-bottom: var(--space-3);">
+          <span>إرسال رابط استعادة كلمة المرور</span>
+        </button>
+        <button type="button" id="back-to-login-btn" class="btn btn-secondary" style="width: 100%;">
+          <span>العودة لتسجيل الدخول</span>
+        </button>
+      </form>
+
+      <!-- 4. Reset Password Panel (Activated via ?token=... in URL) -->
+      <form id="panel-reset" class="auth-panel" hidden novalidate>
+        <div class="form-group">
+          <label for="reset-new-password" class="form-label">كلمة المرور الجديدة</label>
+          <div class="password-field-wrap">
+            <input type="password" id="reset-new-password" class="form-input privacy-secret" placeholder="6 أحرف على الأقل" required>
+            <button type="button" class="password-toggle-btn" data-target="reset-new-password" aria-label="إظهار أو إخفاء كلمة المرور">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span id="reset-password-error" class="form-error-text" role="alert"></span>
+        </div>
+
+        <button type="submit" id="reset-submit-btn" class="btn btn-primary btn-lg" style="width: 100%;">
+          <span>حفظ كلمة المرور الجديدة</span>
+        </button>
+      </form>
+
+      <div class="auth-footer-note">
+        بمتابعتك، فإنك توافق على <a href="/terms.html">الشروط والأحكام</a> و <a href="/privacy.html">سياسة الخصوصية</a>.
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="/js/ui-components.js"></script>
+  <script src="/js/auth.js"></script>
+</body>
+</html>

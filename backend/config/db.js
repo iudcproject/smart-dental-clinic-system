@@ -85,4 +85,37 @@ if (adminCheck === 0) {
   `).run('مدير العيادة (Admin)', 'admin@clinic.com', hashedPassword);
 }
 
+// جدول إعدادات ومحتوى العيادة القابل للتعديل الكامل من لوحة الأدمن
+db.exec(`
+  CREATE TABLE IF NOT EXISTS clinic_settings (
+    setting_key TEXT PRIMARY KEY,
+    setting_value TEXT NOT NULL
+  );
+`);
+
+const defaultSettings = [
+  ['clinic_name', 'عيادة الابتسامة الذكية'],
+  ['hero_eyebrow', 'عمّان - شارع الجاردنز : حجز إلكتروني فوري'],
+  ['hero_title', 'رعاية أسنان دقيقة بتقنيات حديثة وأسعار واضحة'],
+  ['hero_description', 'نجمع بين الخبرة السريرية وأدوات التقييم الذكي لنمنحك خطة علاجية شفافة، مواعيد منظمة بدون انتظار طويل، وسجلاً طبياً رقمياً متكاملاً لكل زيارة.'],
+  ['stat_1_value', '+15 سنة'],
+  ['stat_1_label', 'خبرة سريرية متخصصة'],
+  ['stat_2_value', '100%'],
+  ['stat_2_label', 'تعقيم بمعايير دولية'],
+  ['stat_3_value', '3 ساعات'],
+  ['stat_3_label', 'حد أدنى لتأكيد الموعد'],
+  ['min_booking_hours', '3'],
+  ['clinic_address', 'عمّان، شارع وصفي التل (الجاردنز)، مجمع الياسمين الطبي، الطابق الثالث'],
+  ['working_hours', 'السبت إلى الخميس: 09:00 صباحاً - 08:00 مساءً (الجمعة عطلة)'],
+  ['clinic_phone', '+962 6 550 1234'],
+  ['clinic_email', 'info@smartdental-amman.jo']
+];
+
+const insertSettingStmt = db.prepare(
+  'INSERT OR IGNORE INTO clinic_settings (setting_key, setting_value) VALUES (?, ?)'
+);
+for (const [key, val] of defaultSettings) {
+  insertSettingStmt.run(key, val);
+}
+
 module.exports = db;

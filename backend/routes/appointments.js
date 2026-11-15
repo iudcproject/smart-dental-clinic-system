@@ -73,9 +73,12 @@ router.post('/', isAuthenticated, (req, res) => {
     const appointmentDateTime = new Date(date);
     appointmentDateTime.setHours(h, m, 0, 0);
 
+    const minHoursRow = db.prepare("SELECT setting_value FROM clinic_settings WHERE setting_key = 'min_booking_hours'").get();
+    const minHours = minHoursRow ? Number(minHoursRow.setting_value) : 3;
+
     const diffHours = (appointmentDateTime - now) / (1000 * 60 * 60);
-    if (diffHours < 3) {
-      return res.status(400).json({ error: 'عذراً، يجب أن يتم حجز الموعد قبل 3 ساعات على الأقل من وقت الزيارة' });
+    if (diffHours < minHours) {
+      return res.status(400).json({ error: `عذراً، يجب أن يتم حجز الموعد قبل ${minHours} ساعات على الأقل من وقت الزيارة` });
     }
 
     const targetPatientId = (user.role === 'patient') ? user.id : patient_id;

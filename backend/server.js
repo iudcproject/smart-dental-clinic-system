@@ -36,6 +36,7 @@ const patientsRouter = require('./routes/patients');
 const dentalRouter = require('./routes/dental');
 const profileRouter = require('./routes/profile');
 const aiRouter = require('./routes/ai');
+const settingsRouter = require('./routes/settings');
 
 app.use('/api/auth', authRouter);
 app.use('/api/services', servicesRouter);
@@ -45,6 +46,7 @@ app.use('/api/patients', patientsRouter);
 app.use('/api/dental', dentalRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/settings', settingsRouter);
 
 // 3. مسار عام لجلب قائمة الأطباء (للصفحة الرئيسية ونموذج الحجز)
 app.get('/api/doctors-list', (req, res) => {
