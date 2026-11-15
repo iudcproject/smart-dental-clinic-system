@@ -297,6 +297,7 @@ window.ClinicUI = (function () {
     root.id = 'ai-floating-root';
     root.className = 'ai-floating-root';
 
+    // استبدل كود زر الإغلاق في الـ HTML داخل الدالة بهذا الشكل لضمان الاستجابة الفورية:
     root.innerHTML = `
       <div id="ai-popover-panel" class="ai-popover-panel animate-enter" role="dialog" aria-label="المساعد الطبي الذكي" hidden>
         <div class="ai-popover-header" id="ai-popover-drag-handle" title="اسحب لتحريك النافذة">
@@ -310,7 +311,7 @@ window.ClinicUI = (function () {
               <span style="display: block; font-size: var(--text-xs); color: var(--text-muted);">اسحب الزر لتحريكه في الشاشة</span>
             </div>
           </div>
-          <button type="button" class="ai-popover-close" id="ai-popover-close-btn" aria-label="إغلاق المساعد الذكي">
+          <button type="button" class="ai-popover-close" id="ai-popover-close-btn" aria-label="إغلاق المساعد الذكي" style="cursor: pointer; z-index: 20; position: relative;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -365,10 +366,22 @@ window.ClinicUI = (function () {
     `;
 
     document.body.appendChild(root);
-
+    
     const triggerBtn = document.getElementById('ai-fab-trigger');
     const panel = document.getElementById('ai-popover-panel');
     const closeBtn = document.getElementById('ai-popover-close-btn');
+    
+    // ربط حدث النقر مع منع تداخل السحب (Drag)
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      closePopover();
+    });
+
+    // منع انتقال حدث الضغط إلى الهيدر أثناء النقر على زر الإغلاق
+    closeBtn.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+    });
     const dragHandle = document.getElementById('ai-popover-drag-handle');
     const form = document.getElementById('ai-popover-form');
     const input = document.getElementById('ai-popover-input');
@@ -536,9 +549,7 @@ window.ClinicUI = (function () {
       const isOpen = !panel.hidden;
       isOpen ? closePopover() : openPopover();
     });
-
-    closeBtn.addEventListener('click', closePopover);
-
+   
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !panel.hidden) {
         closePopover();

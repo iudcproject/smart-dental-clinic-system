@@ -109,26 +109,25 @@
     try {
       const res = await fetch('/api/services');
       const data = await res.json();
-      const services = data.services || [];
+      let services = data.services || [];
+
+      // خدمات افتراضية أساسية في حال لم تكن هناك خدمات مضافة لتجنب الفراغات المزعجة
+      if (services.length === 0) {
+        services = [
+          { id: 1, name: 'تنظيف وإزالة الجير', description: 'تنظيف الأسنان من التصبغات والجير وتلميعها للحفاظ على صحة اللثة', duration: 30 },
+          { id: 2, name: 'حشو تجميلي (كومبوزيت)', description: 'علاج التسوس وحشو الأسنان بمواد تجميلية مطابقة للون السن الطبيعي', duration: 45 },
+          { id: 3, name: 'سحب عصب (معالجة لبية)', description: 'تنظيف قناة الجذور وعلاج التهاب العصب بأحدث التقنيات وبدون ألم', duration: 60 }
+        ];
+      }
 
       if (serviceSelect) {
         serviceSelect.setOptions(
           services.map(s => ({
             value: s.id,
             label: s.name,
-            meta: `${s.price} د.أ`
+            meta: `${s.duration || 30} دقيقة` // إخفاء الأسعار وإظهار المدة فقط
           }))
         );
-      }
-
-      if (services.length === 0) {
-        grid.innerHTML = `
-          <div class="card" style="grid-column: 1 / -1; text-align: center; padding: var(--space-10);">
-            <h3 style="margin: 0 0 var(--space-2);">لا توجد خدمات مضافة حالياً</h3>
-            <p style="margin: 0; color: var(--text-muted);">يرجى التواصل مع إدارة العيادة عبر الهاتف للاستفسار عن العلاجات المتوفرة.</p>
-          </div>
-        `;
-        return;
       }
 
       grid.innerHTML = services
@@ -140,15 +139,15 @@
               <p style="margin: 0; font-size: var(--text-sm); color: var(--text-secondary);">${ClinicUI.escapeHtml(s.description || 'رعاية تخصصية شاملة بإشراف أطباء العيادة.')}</p>
             </div>
             <div>
-              <div class="service-meta-row">
-                <span class="price-tag">${ClinicUI.escapeHtml(s.price)} دينار</span>
-                <span class="duration-tag">${ClinicUI.escapeHtml(s.duration || 30)} دقيقة</span>
+              <div class="service-meta-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+                <span class="price-tag" style="font-weight: 700; color: var(--text-brand);">${ClinicUI.escapeHtml(String(s.price || 0))} دينار</span>
+                <span class="duration-tag">${ClinicUI.escapeHtml(String(s.duration || 30))} دقيقة</span>
               </div>
               <button
                 type="button"
                 class="btn btn-secondary btn-sm select-service-btn"
                 data-service-id="${s.id}"
-                style="width: 100%; margin-top: var(--space-3);"
+                style="width: 100%;"
               >
                 اختيار هذه الخدمة للحجز
               </button>
@@ -161,9 +160,11 @@
       grid.querySelectorAll('.select-service-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const id = btn.dataset.serviceId;
-          if (serviceSelect) serviceSelect.setValue(id);
+          if (serviceSelect) {
+            serviceSelect.setValue(id);
+          }
           document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
-          ClinicUI.showToast('تم تحديد الخدمة في نموذج الحجز');
+          ClinicUI.showToast('تم تحديد الخدمة في نموذج الحجز بنجاح');
         });
       });
     } catch (e) {
@@ -242,6 +243,19 @@
       const start_time = document.getElementById('booking-time').value;
       const notes = document.getElementById('booking-notes').value.trim();
 
+      // إلزام تسجيل الدخول أولاً قبل السماح بأي خطوة حجز
+      if (!currentUser) {
+        sessionStorage.setItem(
+          'pending_booking',
+          JSON.stringify({ doctor_id, service_id, date, start_time, notes })
+        );
+        ClinicUI.showToast('يجب تسجيل الدخول أو إنشاء حساب لإتمام الحجز، تم حفظ اختياراتك', 'warning');
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 900);
+        return;
+      }
+
       let valid = true;
 
       if (!doctor_id) {
@@ -277,18 +291,6 @@
       }
 
       if (!valid) return;
-
-      if (!currentUser) {
-        sessionStorage.setItem(
-          'pending_booking',
-          JSON.stringify({ doctor_id, service_id, date, start_time, notes })
-        );
-        ClinicUI.showToast('يرجى تسجيل الدخول لإتمام الحجز، تم حفظ اختياراتك', 'warning');
-        setTimeout(() => {
-          window.location.href = '/login.html';
-        }, 900);
-        return;
-      }
 
       ClinicUI.setButtonLoading(btn, true, 'جاري إرسال طلب الحجز...');
       try {

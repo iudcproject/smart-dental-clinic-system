@@ -58,7 +58,7 @@ router.get('/', isAuthenticated, (req, res) => {
   }
 });
 
-// إنشاء موعد جديد (مع التحقق من شرط الحجز المسبق بـ 3 ساعات)
+// إنشاء موعد جديد مع التحقق من شرط 3 ساعات، ساعات العمل، ومنع التضارب لنفس الطبيب
 router.post('/', isAuthenticated, (req, res) => {
   try {
     const user = req.session.user;
@@ -68,6 +68,12 @@ router.post('/', isAuthenticated, (req, res) => {
       return res.status(400).json({ error: 'الطبيب والتاريخ والساعة مطلوبة' });
     }
 
+    // 1. التحقق من ساعات العمل الرسمية (بين 09:00 صباحاً و 08:00 مساءً)
+    if (start_time < '09:00' || start_time > '20:00') {
+      return res.status(400).json({ error: 'عذراً، وقت الحجز خارج ساعات العمل الرسمية للعيادة (09:00 ص - 08:00 م)' });
+    }
+
+    // 2. التحقق من شرط الحد الأدنى لقبل 3 ساعات على الأقل[cite: 11]
     const now = new Date();
     const [h, m] = start_time.split(':').map(Number);
     const appointmentDateTime = new Date(date);
@@ -79,6 +85,16 @@ router.post('/', isAuthenticated, (req, res) => {
     const diffHours = (appointmentDateTime - now) / (1000 * 60 * 60);
     if (diffHours < minHours) {
       return res.status(400).json({ error: `عذراً، يجب أن يتم حجز الموعد قبل ${minHours} ساعات على الأقل من وقت الزيارة` });
+    }
+
+    // 3. منع التضارب: التحقق من عدم وجود موعد آخر لنفس الطبيب في نفس اليوم والتوقيت (غير الملغاة)
+    const conflictAppt = db.prepare(`
+      SELECT id FROM appointments 
+      WHERE doctor_id = ? AND date = ? AND start_time = ? AND status != 'cancelled'
+    `).get(doctor_id, date, start_time);
+
+    if (conflictAppt) {
+      return res.status(400).json({ error: 'عذراً، الطبيب لديه موعد محجوز مسبقاً في هذا التوقيت، يرجى اختيار وقت آخر' });
     }
 
     const targetPatientId = (user.role === 'patient') ? user.id : patient_id;

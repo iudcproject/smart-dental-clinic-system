@@ -87,4 +87,31 @@ router.delete('/:id', isAdmin, (req, res) => {
   }
 });
 
+// تعديل خدمة علاجية موجودة (للأدمن فقط)
+router.put('/:id', isAdmin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, duration } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'اسم الخدمة مطلوب' });
+    }
+
+    const stmt = db.prepare(`
+      UPDATE dental_services 
+      SET name = ?, description = ?, price = ?, duration = ?
+      WHERE id = ?
+    `);
+    const result = stmt.run(name, description || '', price || 0, duration || 30, id);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'الخدمة غير موجودة' });
+    }
+
+    res.json({ message: 'تم تحديث الخدمة بنجاح' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

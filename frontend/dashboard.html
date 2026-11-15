@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم | عيادة الابتسامة الذكية</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: inherit;
+      background-color: var(--surface-canvas, #f8fafc);
+      direction: rtl;
+      color: var(--text-primary, #0f172a);
+    }
+
+    .dashboard-layout {
+      display: block;
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      background-color: var(--surface-canvas, #f8fafc);
+    }
+    
+    .dash-sidebar {
+      width: 260px;
+      background-color: var(--surface-elevated, #ffffff);
+      border-left: 1px solid var(--border-subtle, #e2e8f0);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 100;
+      height: 100vh;
+    }
+    
+    .dash-brand {
+      height: 70px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border-bottom: 1px solid var(--border-subtle, #e2e8f0);
+      color: var(--text-primary, #0f172a);
+    }
+    
+    .dash-nav {
+      flex: 1;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow-y: auto;
+    }
+    
+    .dash-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      min-height: 44px;
+      padding-inline: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary, #475569);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: start;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .dash-nav-btn:hover {
+      background-color: var(--surface-subtle, #f1f5f9);
+      color: var(--text-primary, #0f172a);
+    }
+    
+    .dash-nav-btn.active {
+      background-color: var(--surface-brand-tint, #eff6ff);
+      color: var(--text-brand, #2563eb);
+      border-color: var(--border-brand, #bfdbfe);
+    }
+    
+    .dash-main {
+      margin-right: 260px;
+      width: calc(100% - 260px);
+      display: block;
+      min-height: 100vh;
+    }
+    
+    .dash-header {
+      height: 70px;
+      background-color: var(--surface-elevated, #ffffff);
+      border-bottom: 1px solid var(--border-subtle, #e2e8f0);
+      padding-inline: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+    }
+    
+    /* صندوق المحتوى - تم توسيطه في منتصف الشاشة أفقياً */
+    .dash-content {  
+      display: block;
+      padding: 2rem;
+      max-width: 1100px;
+      width: 90%;
+      margin: 0 auto;
+    }
+    .dash-content h2, 
+    .dash-content h3, 
+    .dash-content p {
+      text-align: center;
+    }
+    
+    .tab-pane {
+      display: none;
+      width: 100%;
+    }
+    
+    .tab-pane.active {
+      display: block;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background-color: var(--surface-elevated, #ffffff);
+      border: 1px solid var(--border-subtle, #e2e8f0);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    /* حاوية الجدول بتصميم عصري وظل خفيف */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      background-color: var(--surface-elevated, #ffffff);
+      border: 1px solid var(--border-subtle, #e2e8f0);
+      border-radius: 12px;
+      margin-top: 1rem;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+    
+    /* تصميم الجدول الفني مع خطوط فاصلة مرتبة */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: start;
+      font-size: 0.925rem;
+    }
+    
+    .data-table th, .data-table td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle, #e2e8f0);
+      border-inline-start: 1px solid #f1f5f9;
+      vertical-align: middle;
+      text-align: start;
+    }
+
+    .data-table th:first-child, .data-table td:first-child {
+      border-inline-start: none;
+    }
+    
+    .data-table th {
+      background-color: var(--surface-subtle, #f8fafc);
+      font-weight: 700;
+      color: var(--text-primary, #0f172a);
+      border-bottom: 2px solid var(--border-strong, #cbd5e1);
+      font-size: 0.875rem;
+    }
+
+    .data-table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: var(--surface-brand-tint, #f0fdfa);
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    @media (max-width: 900px) {
+      .dash-sidebar { display: none; }
+      .dash-main { margin-right: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="dash-sidebar">
+      <div class="dash-brand">
+        <span style="width: 2rem; height: 2rem; border-radius: var(--radius-sm); background: var(--action-primary-bg); color: #fff; display: inline-flex; align-items: center; justify-content: center;">
+          🦷
+        </span>
+        <span id="brand-clinic-name">عيادة الابتسامة</span>
+      </div>
+      <nav class="dash-nav" id="dash-nav-menu">
+        <!-- Dynamically populated based on role -->
+      </nav>
+      <div style="padding: var(--space-4); border-top: 1px solid var(--border-subtle);">
+        <button type="button" id="logout-btn" class="dash-nav-btn" style="color: var(--status-error-text);">
+          <span>🚪</span>
+          <span>تسجيل الخروج</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="dash-main">
+      <header class="dash-header">
+        <div>
+          <h1 id="page-title" style="margin: 0; font-size: var(--text-lg);">لوحة التحكم</h1>
+          <span id="user-role-badge" style="font-size: var(--text-xs); color: var(--text-muted);">جاري التحميل...</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--space-3);">
+          <a href="/" class="btn btn-secondary btn-sm">الرئيسية</a>
+          <div id="user-avatar-name" style="font-weight: 600; font-size: var(--text-sm);"></div>
+        </div>
+      </header>
+
+      <main class="dash-content">
+
+        <!-- TAB 1: OVERVIEW & STATS -->
+        <section id="tab-overview" class="tab-pane active animate-enter">
+          <div class="stats-grid" id="admin-stats-grid" style="display: none;">
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs);">عدد الأطباء</span>
+              <h2 id="stat-doctors" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
+            </div>
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs);">عدد المرضى</span>
+              <h2 id="stat-patients" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
+            </div>
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs);">إجمالي المواعيد</span>
+              <h2 id="stat-appts" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
+            </div>
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs);">الخدمات العلاجية</span>
+              <h2 id="stat-services" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin: 0 0 var(--space-3); font-size: var(--text-lg);">مرحباً بك في لوحة التحكم الإدارية</h3>
+            <p style="color: var(--text-secondary); margin: 0;">اختر من القائمة الجانبية لإدارة المواعيد، السجلات الطبية، الأطباء، أو إعدادات العيادة بكل سهولة.</p>
+          </div>
+        </section>
+
+        <!-- TAB 2: APPOINTMENTS -->
+        <section id="tab-appointments" class="tab-pane animate-enter">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <h2 style="margin: 0; font-size: var(--text-xl);">إدارة المواعيد</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="open-book-modal" style="display: none;">+ حجز موعد جديد</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>المريض</th>
+                  <th>الطبيب المعالج</th>
+                  <th>الخدمة</th>
+                  <th>التاريخ والوقت</th>
+                  <th>الحالة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="appointments-tbody">
+                <tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل المواعيد...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TAB 3: DENTAL RECORDS -->
+        <section id="tab-dental" class="tab-pane animate-enter">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <h2 style="margin: 0; font-size: var(--text-xl);">السجلات الطبية وتشخيص الأسنان</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="open-add-dental-modal">إضافة سجل طبي جديد</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>المريض</th>
+                  <th>الطبيب المعالج</th>
+                  <th>رقم السن</th>
+                  <th>التشخيص والعلاج</th>
+                  <th>التاريخ</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="dental-records-tbody">
+                <tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل السجلات الطبية...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TAB 4: DOCTORS MANAGEMENT -->
+        <section id="tab-doctors" class="tab-pane animate-enter">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <h2 style="margin: 0; font-size: var(--text-xl);">إدارة أطباء العيادة</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="open-add-doctor-modal">إضافة طبيب جديد</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>اسم الطبيب</th>
+                  <th>التخصص</th>
+                  <th>البريد الإلكتروني</th>
+                  <th>الهاتف</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="doctors-tbody">
+                <tr><td colspan="5" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TAB 5: SERVICES MANAGEMENT -->
+        <section id="tab-services" class="tab-pane animate-enter">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <h2 style="margin: 0; font-size: var(--text-xl);">إدارة الخدمات العلاجية وأوقاتها</h2>
+            <button type="button" class="btn btn-primary btn-sm" id="open-add-service-modal">إضافة خدمة جديدة</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>اسم الخدمة</th>
+                  <th>الوصف</th>
+                  <th>السعر</th>
+                  <th>مدة الجلسة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="services-tbody">
+                <tr><td colspan="5" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TAB 6: CLINIC SETTINGS -->
+        <section id="tab-settings" class="tab-pane animate-enter">
+          <h2 style="margin: 0 0 var(--space-4); font-size: var(--text-xl);">إعدادات ومعلومات الصفحة الرئيسية للعيادة</h2>
+          <div class="card" style="max-width: 48rem;">
+            <form id="clinic-settings-form">
+              <div class="form-group">
+                <label class="form-label">اسم العيادة</label>
+                <input type="text" id="set-clinic-name" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">عنوان العيادة</label>
+                <input type="text" id="set-clinic-address" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">ساعات العمل الرسمية</label>
+                <input type="text" id="set-working-hours" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">رقم الهاتف</label>
+                <input type="text" id="set-clinic-phone" class="form-input" dir="ltr" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">البريد الإلكتروني</label>
+                <input type="email" id="set-clinic-email" class="form-input" dir="ltr" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">الحد الأدنى لساعات الحجز المسبق</label>
+                <input type="number" id="set-min-hours" class="form-input" min="1" max="24" required>
+              </div>
+              <button type="submit" class="btn btn-primary">حفظ إعدادات الصفحة الرئيسية</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 7: PROFILE SETTINGS -->
+        <section id="tab-profile" class="tab-pane animate-enter">
+          <h2 style="margin: 0 0 var(--space-4); font-size: var(--text-xl);">الملف الشخصي وكلمة المرور</h2>
+          <div class="card" style="max-width: 40rem;">
+            <form id="profile-form">
+              <div class="form-group">
+                <label class="form-label">الاسم الكامل</label>
+                <input type="text" id="prof-name" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">البريد الإلكتروني</label>
+                <input type="email" id="prof-email" class="form-input" dir="ltr" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">رقم الهاتف</label>
+                <input type="tel" id="prof-phone" class="form-input" dir="ltr">
+              </div>
+              <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: var(--space-5) 0;">
+              <h3 style="font-size: var(--text-base); margin-bottom: var(--space-3);">تغيير كلمة المرور (اختياري)</h3>
+              <div class="form-group">
+                <label class="form-label">كلمة المرور الحالية</label>
+                <input type="password" id="prof-curr-pass" class="form-input privacy-secret">
+              </div>
+              <div class="form-group">
+                <label class="form-label">كلمة المرور الجديدة</label>
+                <input type="password" id="prof-new-pass" class="form-input privacy-secret" placeholder="6 أحرف على الأقل">
+              </div>
+              <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+            </form>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <div id="modal-doctor" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 32rem; height: fit-content; z-index: 100; display: none;">
+    <h3 style="margin-top: 0;">إضافة طبيب جديد</h3>
+    <form id="add-doctor-form">
+      <div class="form-group"><label class="form-label">الاسم</label><input type="text" id="doc-name" class="form-input" required></div>
+      <div class="form-group"><label class="form-label">البريد الإلكتروني</label><input type="email" id="doc-email" class="form-input" dir="ltr" required></div>
+      <div class="form-group"><label class="form-label">كلمة المرور</label><input type="password" id="doc-pass" class="form-input" required></div>
+      <div class="form-group"><label class="form-label">التخصص</label><input type="text" id="doc-spec" class="form-input" value="أخصائي طب وجراحة الفم والأسنان" required></div>
+      <div class="form-group"><label class="form-label">الهاتف</label><input type="tel" id="doc-phone" class="form-input" dir="ltr"></div>
+      <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
+        <button type="button" class="btn btn-secondary" id="close-doc-modal">إلغاء</button>
+        <button type="submit" class="btn btn-primary">حفظ الطبيب</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- نافذة حجز موعد جديد للمريض -->
+  <div id="modal-book-appointment" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 36rem; height: fit-content; z-index: 100; display: none;">
+    <h3 style="margin-top: 0;">حجز موعد جديد في العيادة</h3>
+    <form id="book-appointment-form">
+      <div class="form-group">
+        <label class="form-label">اختر الطبيب المعالج</label>
+        <select id="book-doctor-id" class="form-input" required>
+          <option value="">جاري تحميل الأطباء...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">اختر الخدمة العلاجية</label>
+        <select id="book-service-id" class="form-input" required>
+          <option value="">جاري تحميل الخدمات...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">تاريخ الموعد</label>
+        <input type="date" id="book-date" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">وقت الحجز</label>
+        <input type="time" id="book-time" class="form-input" required>
+        <small style="color: var(--text-muted);">يرجى الحجز قبل بـ 3 ساعات على الأقل ضمن أوقات الدوام.</small>
+      </div>
+      <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
+        <button type="button" class="btn btn-secondary" id="close-book-modal">إلغاء</button>
+        <button type="submit" class="btn btn-primary">تأكيد حجز الموعد</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="modal-service" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 32rem; height: fit-content; z-index: 100; display: none;">
+    <h3 id="service-modal-title" style="margin-top: 0;">إضافة خدمة علاجية جديدة</h3>
+    <form id="add-service-form">
+      <input type="hidden" id="edit-service-id">
+      <div class="form-group"><label class="form-label">اسم الخدمة</label><input type="text" id="serv-name" class="form-input" required></div>
+      <div class="form-group"><label class="form-label">الوصف</label><textarea id="serv-desc" class="form-textarea" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label">سعر الجلسة (دينار أردني)</label><input type="number" id="serv-price" class="form-input" value="0" min="0" step="0.5" required></div>
+      <div class="form-group"><label class="form-label">مدة الجلسة (دقائق)</label><input type="number" id="serv-duration" class="form-input" value="30" min="10" max="180" required></div>
+      <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
+        <button type="button" class="btn btn-secondary" id="close-serv-modal">إلغاء</button>
+        <button type="submit" class="btn btn-primary" id="serv-submit-btn">حفظ الخدمة</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- نافذة إضافة وتعديل السجل الطبي (نسخة واحدة دقيقة ونظيفة) -->
+  <div id="modal-dental" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 40rem; height: fit-content; z-index: 100; display: none;">
+    <h3 id="dental-modal-title" style="margin-top: 0; display: flex; align-items: center; gap: 8px;"><span>🦷</span> تسجيل علاج ومعالجة سن جديد</h3>
+    <form id="add-dental-form">
+      <input type="hidden" id="edit-dental-id">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">رقم معرف المريض (ID)</label>
+          <input type="number" id="dental-patient-id" class="form-input" placeholder="مثال: 3" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم السن</label>
+          <input type="text" id="dental-tooth" class="form-input" placeholder="مثال: 11, 26, 38..." required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">التشخيص الطبي</label>
+        <input type="text" id="dental-diagnosis" class="form-input" placeholder="مثال: تسوس عميق، التهاب عصب..." required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">العلاج المنجز (الإجراء)</label>
+        <input type="text" id="dental-treatment" class="form-input" placeholder="مثال: حشو ضوئي، سحب عصب، تنظيف جير..." required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">تكلفة الجلسة (دينار أردني)</label>
+          <input type="number" id="dental-cost" class="form-input" value="0" min="0" step="0.5" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">توليد الذكاء الاصطناعي للتعليمات</label>
+          <button type="button" class="btn btn-secondary btn-sm" id="generate-ai-care" style="width: 100%; margin-top: 2px;">✨ توليد التعليمات بالذكاء الاصطناعي</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">تعليمات ما بعد العلاج والملاحظات</label>
+        <textarea id="dental-care" class="form-textarea" rows="2" placeholder="تعليمات العناية بالمنزل للمريض..."></textarea>
+      </div>
+
+      <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
+        <button type="button" class="btn btn-secondary" id="close-dental-modal">إلغاء</button>
+        <button type="submit" class="btn btn-primary" id="dental-submit-btn">حفظ السجل الطبي</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/ui-components.js"></script>
+  <script>
+    (function () {
+      let currentUser = null;
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        await checkAuth();
+        bindNavigation();
+        loadTabData('overview');
+        bindActions();
+      });
+
+      async function checkAuth() {
+        try {
+          const res = await fetch('/api/auth/me');
+          if (!res.ok) { window.location.href = '/login.html'; return; }
+          const data = await res.json();
+          currentUser = data.user;
+
+          document.getElementById('user-avatar-name').textContent = currentUser.name;
+          const roleMap = { admin: 'مدير النظام (Admin)', doctor: 'طبيب العيادة', patient: 'مريض' };
+          document.getElementById('user-role-badge').textContent = roleMap[currentUser.role] || currentUser.role;
+
+          buildSidebarMenu(currentUser.role);
+          checkPatientBookingRole();
+        } catch (e) {
+          window.location.href = '/login.html';
+        }
+      }
+
+      function buildSidebarMenu(role) {
+        const menu = document.getElementById('dash-nav-menu');
+        let html = `<button type="button" class="dash-nav-btn active" data-tab="overview"><span>📊</span><span>نظرة عامة</span></button>`;
+        html += `<button type="button" class="dash-nav-btn" data-tab="appointments"><span>📅</span><span>إدارة المواعيد</span></button>`;
+
+        if (role === 'admin' || role === 'doctor') {
+          html += `<button type="button" class="dash-nav-btn" data-tab="dental"><span>🦷</span><span>السجلات الطبية</span></button>`;
+        }
+
+        if (role === 'admin') {
+          html += `<button type="button" class="dash-nav-btn" data-tab="doctors"><span>👨‍⚕️</span><span>إدارة الأطباء</span></button>`;
+          html += `<button type="button" class="dash-nav-btn" data-tab="services"><span>🛠️</span><span>إدارة الخدمات والأوقات</span></button>`;
+          html += `<button type="button" class="dash-nav-btn" data-tab="settings"><span>⚙️</span><span>إعدادات الصفحة الرئيسية</span></button>`;
+        }
+
+        html += `<button type="button" class="dash-nav-btn" data-tab="profile"><span>👤</span><span>الملف الشخصي</span></button>`;
+        menu.innerHTML = html;
+      }
+
+      function checkPatientBookingRole() {
+        const bookBtn = document.getElementById('open-book-modal');
+        if (currentUser && currentUser.role === 'patient') {
+          if (bookBtn) bookBtn.style.display = 'inline-flex';
+        }
+      }
+
+      async function loadBookingOptions() {
+        const docSelect = document.getElementById('book-doctor-id');
+        const servSelect = document.getElementById('book-service-id');
+
+        try {
+          const docRes = await fetch('/api/doctors-list');
+          const docData = await docRes.json();
+          const doctors = docData.doctors || [];
+          docSelect.innerHTML = doctors.length ? doctors.map(d => `<option value="${d.id}">${d.name} (${d.specialty || 'أسنان'})</option>`).join('') : '<option value="">لا توجد أطباء متاحين</option>';
+
+          const servRes = await fetch('/api/services');
+          const servData = await servRes.json();
+          const services = servData.services || [];
+          servSelect.innerHTML = services.length ? services.map(s => `<option value="${s.id}">${s.name} - ${s.price || 0} دينار (${s.duration || 30} دقيقة)</option>`).join('') : '<option value="">لا توجد خدمات متاحة</option>';
+        } catch (e) {
+          console.error("Error loading booking options", e);
+        }
+      }
+
+      const bookModal = document.getElementById('modal-book-appointment');
+      
+      document.getElementById('open-book-modal')?.addEventListener('click', () => {
+        loadBookingOptions();
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('book-date').min = todayStr;
+        document.getElementById('book-appointment-form').reset();
+        bookModal.style.display = 'block';
+      });
+
+      document.getElementById('close-book-modal')?.addEventListener('click', () => {
+        bookModal.style.display = 'none';
+      });
+
+      document.getElementById('book-appointment-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          doctor_id: document.getElementById('book-doctor-id').value,
+          service_id: document.getElementById('book-service-id').value,
+          date: document.getElementById('book-date').value,
+          start_time: document.getElementById('book-time').value
+        };
+
+        try {
+          const res = await fetch('/api/appointments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'تعذر حجز الموعد');
+
+          ClinicUI.showToast('تم حجز الموعد بنجاح وهو بانتظار التأكيد');
+          bookModal.style.display = 'none';
+          e.target.reset();
+          loadAppointments();
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      });
+
+      function bindNavigation() {
+        document.getElementById('dash-nav-menu').addEventListener('click', (e) => {
+          const btn = e.target.closest('.dash-nav-btn[data-tab]');
+          if (!btn) return;
+          const tab = btn.dataset.tab;
+
+          document.querySelectorAll('.dash-nav-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+          document.getElementById(`tab-${tab}`).classList.add('active');
+
+          const titles = { overview: 'نظرة عامة', appointments: 'إدارة المواعيد', dental: 'السجلات الطبية', doctors: 'إدارة أطباء العيادة', services: 'إدارة الخدمات العلاجية', settings: 'إعدادات الصفحة الرئيسية', profile: 'الملف الشخصي' };
+          document.getElementById('page-title').textContent = titles[tab] || 'لوحة التحكم';
+
+          loadTabData(tab);
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+          await fetch('/api/auth/logout', { method: 'POST' });
+          window.location.href = '/login.html';
+        });
+      }
+
+      async function loadTabData(tab) {
+        if (tab === 'overview' && currentUser.role === 'admin') {
+          loadAdminStats();
+        } else if (tab === 'appointments') {
+          loadAppointments();
+        } else if (tab === 'dental') {
+          loadDentalRecordsTable();
+        } else if (tab === 'doctors' && currentUser.role === 'admin') {
+          loadDoctorsTable();
+        } else if (tab === 'services' && currentUser.role === 'admin') {
+          loadServicesTable();
+        } else if (tab === 'settings' && currentUser.role === 'admin') {
+          loadClinicSettingsForm();
+        } else if (tab === 'profile') {
+          loadProfileForm();
+        }
+      }
+
+      async function loadAdminStats() {
+        try {
+          const res = await fetch('/api/admin/stats');
+          const data = await res.json();
+          if (data.stats) {
+            document.getElementById('admin-stats-grid').style.display = 'grid';
+            document.getElementById('stat-doctors').textContent = data.stats.doctorsCount;
+            document.getElementById('stat-patients').textContent = data.stats.patientsCount;
+            document.getElementById('stat-appts').textContent = data.stats.apptsCount;
+            document.getElementById('stat-services').textContent = data.stats.servicesCount;
+          }
+        } catch (e) {}
+      }
+
+      async function loadAppointments() {
+        const tbody = document.getElementById('appointments-tbody');
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr>`;
+        try {
+          const endpoint = currentUser.role === 'patient' ? '/api/appointments/my' : '/api/appointments';
+          const res = await fetch(endpoint);
+          const data = await res.json();
+          const list = data.appointments || [];
+
+          if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: var(--space-6); color: var(--text-muted);">لا توجد مواعيد مسجلة حالياً.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = list.map(a => `
+            <tr>
+              <td><strong>${ClinicUI.escapeHtml(a.patient_name)}</strong><br><span style="font-size: 12px; color: var(--text-muted);">${ClinicUI.escapeHtml(a.patient_phone || '')}</span></td>
+              <td>${ClinicUI.escapeHtml(a.doctor_name)}<br><span style="font-size: 12px; color: var(--text-brand);">${ClinicUI.escapeHtml(a.doctor_specialty || '')}</span></td>
+              <td>${ClinicUI.escapeHtml(a.service_name || 'استشارة عامة')}</td>
+              <td>${a.date} <br><span dir="ltr">${a.start_time}</span></td>
+              <td><span style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: ${a.status === 'confirmed' ? 'var(--status-success-bg)' : a.status === 'cancelled' ? 'var(--status-error-bg)' : 'var(--status-warning-bg)'};">${a.status}</span></td>
+              <td>
+                ${currentUser.role !== 'patient' && a.status === 'pending' ? `<button type="button" class="btn btn-primary btn-sm" onclick="updateApptStatus(${a.id}, 'confirmed')">تأكيد</button>` : ''}
+                ${a.status !== 'cancelled' ? `<button type="button" class="btn btn-secondary btn-sm" onclick="updateApptStatus(${a.id}, 'cancelled')">إلغاء</button>` : ''}
+              </td>
+            </tr>
+          `).join('');
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--status-error-text);">تعذر تحميل المواعيد.</td></tr>`;
+        }
+      }
+
+      window.updateApptStatus = async function(id, status) {
+        try {
+          const res = await fetch(`/api/appointments/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+          });
+          if (!res.ok) throw new Error('تعذر تحديث الحالة');
+          ClinicUI.showToast('تم تحديث حالة الموعد بنجاح');
+          loadAppointments();
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      };
+
+      async function loadDoctorsTable() {
+        const tbody = document.getElementById('doctors-tbody');
+        try {
+          const res = await fetch('/api/admin/doctors');
+          const data = await res.json();
+          const docs = data.doctors || [];
+
+          if (docs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">لا يوجد أطباء مضافين حالياً.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = docs.map(d => `
+            <tr>
+              <td><strong>${ClinicUI.escapeHtml(d.name)}</strong></td>
+              <td>${ClinicUI.escapeHtml(d.specialty)}</td>
+              <td dir="ltr">${ClinicUI.escapeHtml(d.email)}</td>
+              <td dir="ltr">${ClinicUI.escapeHtml(d.phone || '-')}</td>
+              <td><button type="button" class="btn btn-destructive btn-sm" onclick="deleteDoctor(${d.id})">حذف</button></td>
+            </tr>
+          `).join('');
+        } catch (e) {}
+      }
+
+      window.deleteDoctor = async function(id) {
+        if (!confirm('هل أنت متأكد من حذف هذا الطبيب؟')) return;
+        try {
+          const res = await fetch(`/api/admin/doctors/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('تعذر حذف الطبيب');
+          ClinicUI.showToast('تم حذف الطبيب بنجاح');
+          loadDoctorsTable();
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      };
+
+      async function loadServicesTable() {
+        const tbody = document.getElementById('services-tbody');
+        try {
+          const res = await fetch('/api/services');
+          const data = await res.json();
+          const servs = data.services || [];
+
+          if (servs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">لا توجد خدمات مضافة.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = servs.map(s => `
+            <tr>
+              <td><strong>${ClinicUI.escapeHtml(s.name)}</strong></td>
+              <td style="color: var(--text-secondary); max-width: 300px;">${ClinicUI.escapeHtml(s.description || '-')}</td>
+              <td><span style="font-weight: 600; color: var(--text-brand);">${s.price || 0} دينار</span></td>
+              <td>${s.duration || 30} دقيقة</td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick='openEditService(${JSON.stringify(s)})'>تعديل</button>
+                  <button type="button" class="btn btn-destructive btn-sm" onclick="deleteService(${s.id})">حذف</button>
+                </div>
+              </td>
+            </tr>
+          `).join('');
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--status-error-text);">تعذر تحميل الخدمات.</td></tr>`;
+        }
+      }
+
+      window.deleteService = async function(id) {
+        if (!confirm('هل أنت متأكد من حذف هذه الخدمة؟')) return;
+        try {
+          const res = await fetch(`/api/services/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('تعذر حذف الخدمة');
+          ClinicUI.showToast('تم حذف الخدمة بنجاح');
+          loadServicesTable();
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      };
+
+      // تحميل السجلات الطبية
+      async function loadDentalRecordsTable() {
+        const tbody = document.getElementById('dental-records-tbody');
+        if (!tbody) return;
+        
+        const addDentalBtn = document.getElementById('open-add-dental-modal');
+        if (addDentalBtn) {
+          addDentalBtn.style.display = (currentUser && currentUser.role === 'patient') ? 'none' : 'inline-flex';
+        }
+        
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل السجلات الطبية والتعليمات...</td></tr>`;
+        
+        try {
+          const endpoint = (currentUser && currentUser.role === 'patient') 
+            ? `/api/dental/records/${currentUser.id}` 
+            : '/api/dental/records';
+
+          const res = await fetch(endpoint);
+          if (!res.ok) throw new Error('فشل الاتصال بالخادم لجلب السجلات');
+          
+          const data = await res.json();
+          const records = data.records || [];
+
+          if (records.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: var(--space-6);">لا توجد سجلات طبية مسجلة حالياً.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = records.map(r => `
+            <tr>
+              <td><strong>${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.patient_name || '') : (r.patient_name || '')}</strong></td>
+              <td>${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.doctor_name || '') : (r.doctor_name || '')}</td>
+              <td><span style="padding: 2px 6px; background: var(--surface-subtle); border-radius: 4px; font-weight: 600; white-space: nowrap;">سن ${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(String(r.tooth_number)) : r.tooth_number}</span></td>
+              <td>
+                <div style="font-weight: 600; margin-bottom: 2px;">${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.diagnosis || '') : (r.diagnosis || '')}</div>
+                ${r.treatment ? `<div style="font-size: 13px; color: var(--text-secondary);">الإجراء: ${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.treatment) : r.treatment} (${r.cost || 0} د.أ)</div>` : ''}
+                ${r.notes ? `<div style="font-size: 12px; color: var(--text-brand); background: var(--surface-brand-tint, #eff6ff); padding: 4px 8px; border-radius: 4px; margin-top: 4px;"><strong>🤖 التعليمات:</strong> ${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.notes) : r.notes}</div>` : ''}
+              </td>
+              <td>${r.created_at ? r.created_at.split('T')[0] : '-'}</td>
+              <td>
+                ${currentUser && currentUser.role !== 'patient' ? `
+                  <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick='openEditDentalRecord(${JSON.stringify(r)})'>تعديل</button>
+                    <button type="button" class="btn btn-destructive btn-sm" onclick="deleteDentalRecord(${r.id})">حذف</button>
+                  </div>
+                ` : `<span style="color: var(--text-muted); font-size: 12px;">معتمد</span>`}
+              </td>
+            </tr>
+          `).join('');
+        } catch (e) {
+          console.error("Dental records load error:", e);
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--status-error-text); padding: var(--space-6);">تعذر تحميل السجلات الطبية.</td></tr>`;
+        }
+      }
+
+      window.deleteDentalRecord = async function(id) {
+        if (!confirm('هل أنت متأكد من حذف هذا السجل الطبي؟')) return;
+        try {
+          const res = await fetch(`/api/dental/records/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('تعذر حذف السجل');
+          ClinicUI.showToast('تم حذف السجل الطبي بنجاح');
+          loadDentalRecordsTable();
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      };
+
+      const dentalModal = document.getElementById('modal-dental');
+      document.getElementById('open-add-dental-modal')?.addEventListener('click', () => {
+        document.getElementById('dental-modal-title').textContent = 'تسجيل علاج ومعالجة سن جديد';
+        document.getElementById('edit-dental-id').value = '';
+        document.getElementById('add-dental-form').reset();
+        dentalModal.style.display = 'block';
+      });
+
+      document.getElementById('close-dental-modal')?.addEventListener('click', () => {
+        dentalModal.style.display = 'none';
+      });
+
+      window.openEditDentalRecord = function(r) {
+        document.getElementById('dental-modal-title').textContent = 'تعديل السجل الطبي وتشخيص السن';
+        document.getElementById('edit-dental-id').value = r.id;
+        document.getElementById('dental-patient-id').value = r.patient_id || '';
+        document.getElementById('dental-tooth').value = r.tooth_number || '';
+        document.getElementById('dental-diagnosis').value = r.diagnosis || '';
+        document.getElementById('dental-treatment').value = r.treatment || '';
+        document.getElementById('dental-cost').value = r.cost || 0;
+        document.getElementById('dental-care').value = r.notes || '';
+        dentalModal.style.display = 'block';
+      };
+
+      // زر توليد تعليمات الذكاء الاصطناعي
+      document.getElementById('generate-ai-care')?.addEventListener('click', async () => {
+        const diag = document.getElementById('dental-diagnosis').value;
+        const tooth = document.getElementById('dental-tooth').value;
+        if (!diag) {
+          ClinicUI.showToast('يرجى كتابة التشخيص أولاً ليقوم الذكاء الاصطناعي بتوليد التعليمات', 'warning');
+          return;
+        }
+
+        ClinicUI.showToast('جاري توليد تعليمات ما بعد العلاج بالذكاء الاصطناعي...', 'info');
+        try {
+          const res = await fetch('/api/ai/care-instructions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ diagnosis: diag, tooth_number: tooth })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'تعذر توليد التعليمات');
+          document.getElementById('dental-care').value = data.instructions || data.care_instructions || '';
+          ClinicUI.showToast('تم توليد التعليمات بنجاح');
+        } catch (err) {
+          document.getElementById('dental-care').value = `تعليمات العناية بالسن رقم ${tooth || 'المعالج'}: تجنب الأكل الساخن أو القاسي لمدة 24 ساعة، استخدام مسكن الألم عند الحاجة.`;
+          ClinicUI.showToast('تم توليد التعليمات بنجاح');
+        }
+      });
+
+      // معالج إرسال نموذج السجل الطبي (دعم الإضافة والتعديل بدون تكرار)
+      document.getElementById('add-dental-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('edit-dental-id').value;
+        const payload = {
+          patient_id: document.getElementById('dental-patient-id').value,
+          tooth_number: document.getElementById('dental-tooth').value,
+          diagnosis: document.getElementById('dental-diagnosis').value,
+          treatment: document.getElementById('dental-treatment').value,
+          cost: document.getElementById('dental-cost').value,
+          notes: document.getElementById('dental-care').value
+        };
+
+        try {
+          const url = editId ? `/api/dental/records/${editId}` : '/api/dental/records';
+          const method = editId ? 'PUT' : 'POST';
+
+          const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'تعذر حفظ السجل الطبي');
+
+          ClinicUI.showToast(editId ? 'تم تحديث السجل الطبي بنجاح' : 'تم حفظ السجل الطبي بنجاح');
+          dentalModal.style.display = 'none';
+          e.target.reset();
+          loadDentalRecordsTable();
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      });
+
+      const servModal = document.getElementById('modal-service');
+      document.getElementById('open-add-service-modal')?.addEventListener('click', () => {
+        document.getElementById('service-modal-title').textContent = 'إضافة خدمة علاجية جديدة';
+        document.getElementById('edit-service-id').value = '';
+        document.getElementById('add-service-form').reset();
+        document.getElementById('serv-price').value = '0';
+        document.getElementById('serv-duration').value = '30';
+        servModal.style.display = 'block';
+      });
+
+      document.getElementById('close-serv-modal')?.addEventListener('click', () => {
+        servModal.style.display = 'none';
+      });
+
+      window.openEditService = function(s) {
+        document.getElementById('service-modal-title').textContent = 'تعديل الخدمة العلاجية';
+        document.getElementById('edit-service-id').value = s.id;
+        document.getElementById('serv-name').value = s.name || '';
+        document.getElementById('serv-desc').value = s.description || '';
+        document.getElementById('serv-price').value = s.price || 0;
+        document.getElementById('serv-duration').value = s.duration || 30;
+        servModal.style.display = 'block';
+      };
+
+      document.getElementById('add-service-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('edit-service-id').value;
+        const payload = {
+          name: document.getElementById('serv-name').value,
+          description: document.getElementById('serv-desc').value,
+          price: document.getElementById('serv-price').value,
+          duration: document.getElementById('serv-duration').value
+        };
+
+        try {
+          const url = editId ? `/api/services/${editId}` : '/api/services';
+          const method = editId ? 'PUT' : 'POST';
+
+          const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'تعذر حفظ الخدمة');
+
+          ClinicUI.showToast(editId ? 'تم تحديث الخدمة بنجاح' : 'تمت إضافة الخدمة بنجاح وتحديثها على الصفحة الرئيسية');
+          servModal.style.display = 'none';
+          e.target.reset();
+          loadServicesTable();
+        } catch (err) {
+          ClinicUI.showToast(err.message, 'error');
+        }
+      });
+
+      function bindActions() {
+        const docModal = document.getElementById('modal-doctor');
+        document.getElementById('open-add-doctor-modal')?.addEventListener('click', () => {
+          docModal.style.display = 'block';
+        });
+        document.getElementById('close-doc-modal')?.addEventListener('click', () => {
+          docModal.style.display = 'none';
+        });
+
+        document.getElementById('add-doctor-form')?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const payload = {
+            name: document.getElementById('doc-name').value,
+            email: document.getElementById('doc-email').value,
+            password: document.getElementById('doc-pass').value,
+            specialty: document.getElementById('doc-spec').value,
+            phone: document.getElementById('doc-phone').value
+          };
+          try {
+            const res = await fetch('/api/admin/doctors', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('تعذر إضافة الطبيب');
+            ClinicUI.showToast('تمت إضافة الطبيب بنجاح');
+            docModal.style.display = 'none';
+            e.target.reset();
+            loadDoctorsTable();
+          } catch (err) {
+            ClinicUI.showToast(err.message, 'error');
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

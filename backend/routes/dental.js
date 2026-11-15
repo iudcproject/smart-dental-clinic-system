@@ -3,13 +3,29 @@ const router = express.Router();
 const db = require('../config/db');
 const { isAuthenticated, isDoctorOrAdmin } = require('../middleware/auth');
 
+// جلب جميع السجلات الطبية (للأطباء ومدير النظام)
+router.get('/records', isDoctorOrAdmin, (req, res) => {
+  try {
+    const records = db.prepare(`
+      SELECT dr.*, p.name as patient_name, u.name as doctor_name 
+      FROM dental_records dr
+      JOIN users p ON dr.patient_id = p.id
+      JOIN users u ON dr.doctor_id = u.id
+      ORDER BY dr.id DESC
+    `).all();
+
+    res.json({ records });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // جلب سجلات الأسنان لمريض معين
 router.get('/records/:patientId', isAuthenticated, (req, res) => {
   try {
     const { patientId } = req.params;
     const user = req.session.user;
 
-    // المريض يرى سجلاته الخاصة فقط
     if (user.role === 'patient' && String(user.id) !== String(patientId)) {
       return res.status(403).json({ error: 'غير مصرح لك بالاطلاع على سجلات مريض آخر' });
     }
@@ -34,16 +50,23 @@ router.post('/records', isDoctorOrAdmin, (req, res) => {
     const user = req.session.user;
     const { patient_id, tooth_number, diagnosis, treatment, cost, notes } = req.body;
 
-    if (!patient_id || !tooth_number || !diagnosis || !treatment) {
-      return res.status(400).json({ error: 'جميع الحقول الأساسية مطلوبة (المريض، رقم السن، التشخيص، العلاج)' });
+    if (!patient_id || !tooth_number || !diagnosis) {
+      return res.status(400).json({ error: 'الحقول الأساسية مطلوبة (المريض، رقم السن، التشخيص)' });
     }
 
     const info = db.prepare(`
       INSERT INTO dental_records (patient_id, doctor_id, tooth_number, diagnosis, treatment, cost, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(patient_id, user.id, tooth_number, diagnosis, treatment, Number(cost) || 0, notes || '');
+    `).run(patient_id, user.id, tooth_number, diagnosis, treatment || '', Number(cost) || 0, notes || '');
 
-    const newRecord = db.prepare('SELECT * FROM dental_records WHERE id = ?').get(info.lastInsertRowid);
+    const newRecord = db.prepare(`
+      SELECT dr.*, p.name as patient_name, u.name as doctor_name 
+      FROM dental_records dr
+      JOIN users p ON dr.patient_id = p.id
+      JOIN users u ON dr.doctor_id = u.id
+      WHERE dr.id = ?
+    `).get(info.lastInsertRowid);
+
     res.status(201).json({ message: 'تمت إضافة السجل الطبي بنجاح', record: newRecord });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -56,6 +79,36 @@ router.delete('/records/:id', isDoctorOrAdmin, (req, res) => {
     const { id } = req.params;
     db.prepare('DELETE FROM dental_records WHERE id = ?').run(id);
     res.json({ message: 'تم حذف السجل بنجاح' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// تعديل سجل سن/علاج (للطبيب والأدمن فقط)
+router.put('/records/:id', isDoctorOrAdmin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { patient_id, tooth_number, diagnosis, treatment, cost, notes } = req.body;
+
+    if (!patient_id || !tooth_number || !diagnosis) {
+      return res.status(400).json({ error: 'الحقول الأساسية مطلوبة (المريض، رقم السن، التشخيص)' });
+    }
+
+    db.prepare(`
+      UPDATE dental_records 
+      SET patient_id = ?, tooth_number = ?, diagnosis = ?, treatment = ?, cost = ?, notes = ?
+      WHERE id = ?
+    `).run(patient_id, tooth_number, diagnosis, treatment || '', Number(cost) || 0, notes || '', id);
+
+    const updatedRecord = db.prepare(`
+      SELECT dr.*, p.name as patient_name, u.name as doctor_name 
+      FROM dental_records dr
+      JOIN users p ON dr.patient_id = p.id
+      JOIN users u ON dr.doctor_id = u.id
+      WHERE dr.id = ?
+    `).get(id);
+
+    res.json({ message: 'تم تحديث السجل الطبي بنجاح', record: updatedRecord });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
