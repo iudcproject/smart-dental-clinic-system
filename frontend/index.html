@@ -26,355 +26,7 @@
   <link rel="stylesheet" href="/css/animations.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/landing.css">
-
-  <style>
-  /* 1. جعل الصفحة شفافة بالكامل لإظهار الفيديو الخلفي بوضوح */
-  html, body, main, .hero-section, .section-block, .page-shell {
-    background: transparent !important;
-    background-color: transparent !important;
-  }
-
-  /* التحكم بالفيديو الخلفي في الوضعين النهاري والليلي */
-  #dental-bg-video-wrap {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-    background-color: #f8fafc;
-    transition: background-color 0.4s ease;
-  }
-  .dark-mode #dental-bg-video-wrap {
-    background-color: #090d16;
-  }
-
-  #dental-bg-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.55; /* وضوح عالٍ للفيديو في الوضع النهاري */
-    filter: brightness(1.04) contrast(1.05);
-    transition: opacity 0.4s ease, filter 0.4s ease;
-  }
-  .dark-mode #dental-bg-video {
-    opacity: 0.45; /* وضوح سينمائي للفيديو في الوضع الليلي */
-    filter: brightness(0.75) contrast(1.15);
-  }
-
-  /* 2. الشريط العلوي (Navbar) والشريط السفلي (Footer) بتصميم زجاجي يتغير مع الوضع الليلي والنهاري */
-  .site-header, header, .navbar, .site-footer, footer {
-    background: rgba(255, 255, 255, 0.72) !important;
-    backdrop-filter: blur(18px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
-    transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
-  }
-  .site-footer, footer {
-    border-bottom: none !important;
-    border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
-  }
-
-  .dark-mode .site-header, .dark-mode header, .dark-mode .navbar,
-  .dark-mode .site-footer, .dark-mode footer {
-    background: rgba(15, 23, 42, 0.78) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
-    color: #f8fafc !important;
-  }
-
-  /* ألوان الروابط والنصوص في الشريط العلوي والسفلي */
-  .dark-mode .site-header a, .dark-mode header a, .dark-mode .brand-name,
-  .dark-mode .site-footer a, .dark-mode .site-footer span {
-    color: #f1f5f9 !important;
-  }
-  .dark-mode .site-header a:hover, .dark-mode .site-footer a:hover {
-    color: #38bdf8 !important;
-  }
-
-  /* إصلاح وضوح زر تسجيل الدخول والأزرار الزجاجية في الشريط العلوي (النهاري والليلي) */
-  #header-auth-actions .btn-secondary,
-  .site-header a.btn-secondary {
-    background: rgba(255, 255, 255, 0.85) !important;
-    color: #0f172a !important;
-    border: 1px solid rgba(13, 148, 136, 0.35) !important;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06) !important;
-    font-weight: 700 !important;
-    opacity: 1 !important;
-  }
-
-  #header-auth-actions .btn-secondary:hover,
-  .site-header a.btn-secondary:hover {
-    background: rgba(13, 148, 136, 0.15) !important;
-    color: #0d9488 !important;
-    border-color: #0d9488 !important;
-  }
-
-  .dark-mode #header-auth-actions .btn-secondary,
-  .dark-mode .site-header a.btn-secondary {
-    background: rgba(30, 41, 59, 0.85) !important;
-    color: #f8fafc !important;
-    border: 1px solid rgba(45, 212, 191, 0.35) !important;
-  }
-
-  .dark-mode #header-auth-actions .btn-secondary:hover,
-  .dark-mode .site-header a.btn-secondary:hover {
-    background: rgba(45, 212, 191, 0.22) !important;
-    color: #5eead4 !important;
-    border-color: #2dd4bf !important;
-  }
-
-  /* 3. ألوان النصوص الرئيسية في الصفحة (تتحول للأبيض الواضح في الوضع الليلي) */
-  .dark-mode body, .dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode strong, .dark-mode .section-title {
-    color: #f8fafc !important;
-  }
-  .dark-mode p, .dark-mode .section-subtitle, .dark-mode .metric-label, .dark-mode .form-label {
-    color: #cbd5e1 !important;
-  }
-  /* تفتيح لون النصوص داخل بطاقة خطوات الزيارة في الوضع الليلي */
-  .dark-mode #visit-steps-card,
-  .dark-mode #visit-steps-card ol,
-  .dark-mode #visit-steps-card li,
-  .dark-mode #visit-steps-card span {
-    color: #e2e8f0 !important;
-  }
-  .dark-mode #visit-steps-card h2,
-  .dark-mode #visit-steps-card strong {
-    color: #ffffff !important;
-  }
-
-  /* 4. البطاقات الزجاجية الشفافة (Glassmorphism) */
-  .service-card, .card, .doctor-card, aside.card {
-    background: rgba(255, 255, 255, 0.42) !important;
-    backdrop-filter: blur(16px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.65) !important;
-    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06) !important;
-    border-radius: 16px !important;
-    transform-style: preserve-3d;
-    will-change: transform;
-    transition: transform 0.25s ease-out, box-shadow 0.3s ease, background 0.35s ease;
-  }
-
-  .dark-mode .service-card, .dark-mode .card, .dark-mode .doctor-card, .dark-mode aside.card {
-    background: rgba(15, 23, 42, 0.45) !important;
-    border: 1px solid rgba(255, 255, 255, 0.14) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
-  }
-
-  /* 5. حقول الإدخال والقوائم المنسدلة داخل البطاقات الزجاجية */
-  .form-input, .form-textarea, .custom-select-trigger {
-    background: rgba(255, 255, 255, 0.65) !important;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(15, 23, 42, 0.12) !important;
-  }
-  .dark-mode .form-input, .dark-mode .form-textarea, .dark-mode .custom-select-trigger, .dark-mode .custom-select-listbox {
-    background: rgba(15, 23, 42, 0.65) !important;
-    color: #f8fafc !important;
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  }
-  
-  /* قائمة منسدلة زجاجية متكيفة مع الوضع النهاري والليلي لجميع العناصر */
-  #doctor-select-container,
-  #service-select-container,
-  .custom-select {
-    position: relative;
-    z-index: 60;
-  }
-
-  #doctor-select-container > div:last-child,
-  #service-select-container > div:last-child,
-  #doctor-select-container [role="listbox"],
-  #service-select-container [role="listbox"],
-  .custom-select-listbox,
-  .custom-select-menu {
-    background: rgba(255, 255, 255, 0.78) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.85) !important;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14) !important;
-    border-radius: 12px !important;
-    z-index: 9999 !important;
-  }
-
-  #doctor-select-container [role="listbox"] *,
-  #service-select-container [role="listbox"] *,
-  .custom-select-listbox *,
-  .custom-select-menu *,
-  .custom-select-option {
-    background-color: transparent !important;
-    color: #0f172a !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  #doctor-select-container [role="listbox"] > *:hover,
-  #service-select-container [role="listbox"] > *:hover,
-  .custom-select-option:hover {
-    background: rgba(13, 148, 136, 0.16) !important;
-    color: #0d9488 !important;
-  }
-
-  /* الوضع الليلي: زجاج داكن متكيف مع الشاشة */
-  .dark-mode #doctor-select-container > div:last-child,
-  .dark-mode #service-select-container > div:last-child,
-  .dark-mode #doctor-select-container [role="listbox"],
-  .dark-mode #service-select-container [role="listbox"],
-  .dark-mode .custom-select-listbox,
-  .dark-mode .custom-select-menu {
-    background: rgba(15, 23, 42, 0.82) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
-  }
-
-  .dark-mode #doctor-select-container [role="listbox"] *,
-  .dark-mode #service-select-container [role="listbox"] *,
-  .dark-mode .custom-select-listbox *,
-  .dark-mode .custom-select-menu *,
-  .dark-mode .custom-select-option {
-    color: #f8fafc !important;
-  }
-
-  .dark-mode #doctor-select-container [role="listbox"] > *:hover,
-  .dark-mode #service-select-container [role="listbox"] > *:hover,
-  .dark-mode .custom-select-option:hover {
-    background: rgba(45, 212, 191, 0.22) !important;
-    color: #5eead4 !important;
-  }
-
-  /* 6. إزالة المستطيلات المزعجة حول الإحصائيات والمميزات وجعلها نظيفة تماماً */
-  #dynamic-hero-metrics > div, .hero-metrics > div {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    padding: 0 !important;
-  }
-
-  .metric-value {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    font-size: var(--text-2xl);
-    font-weight: 800;
-    color: #0d9488 !important;
-    text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9);
-  }
-  .dark-mode .metric-value {
-    color: #2dd4bf !important;
-    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
-  }
-
-  /* شارة العنوان العلوي فقط بشكل زجاجي ناعم */
-  [data-setting="hero_eyebrow"] {
-    background: rgba(13, 148, 136, 0.12);
-    backdrop-filter: blur(8px);
-    padding: 5px 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(13, 148, 136, 0.25);
-    display: inline-block;
-  }
-  .dark-mode [data-setting="hero_eyebrow"] {
-    background: rgba(45, 212, 191, 0.15);
-    color: #5eead4 !important;
-    border-color: rgba(45, 212, 191, 0.3);
-  }
-
-  /* 7. حركة الانزلاق الجانبي مع السكرول */
-  .scroll-slide-right {
-    opacity: 0;
-    transform: translateX(40px);
-    transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .scroll-slide-right.is-revealed {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  /* مسرح أوراق الكروت المتراكبة (Stacking Cards Curtain) */
-  #cinematic-scroll-track {
-    position: relative;
-    height: auto;
-  }
-
-  #cinematic-viewport {
-    position: relative;
-    height: auto;
-    width: 100%;
-    overflow: visible;
-  }
-
-  .cinematic-slide {
-    position: sticky;
-    top: 70px;
-    width: 100%;
-    min-height: calc(100vh - 70px);
-    padding: 2.5rem 1.5rem 4rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: rgba(248, 250, 252, 0.35);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 28px 28px 0 0;
-    box-shadow: 0 -16px 40px rgba(15, 23, 42, 0.08);
-    transform-origin: center top;
-    will-change: transform, opacity;
-    transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-  }
-
-  .cinematic-slide[data-stage="0"] {
-    border-top: none;
-    border-radius: 0;
-    box-shadow: none;
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .dark-mode .cinematic-slide:not([data-stage="0"]) {
-    background: rgba(15, 23, 42, 0.52);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.45);
-  }
-
-  /* ترتيب الطبقات فوق بعضها */
-  .cinematic-slide[data-stage="0"] { z-index: 1; }
-  .cinematic-slide[data-stage="1"] { z-index: 2; }
-  .cinematic-slide[data-stage="2"] { z-index: 3; }
-  .cinematic-slide[data-stage="3"] { z-index: 4; }
-
-  /* شريط مؤشر المحطات الجانبي */
-  .stage-dots {
-    position: fixed;
-    left: 1.25rem;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 90;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  html[dir="ltr"] .stage-dots { left: auto; right: 1.25rem; }
-
-  .stage-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: rgba(13, 148, 136, 0.3);
-    border: 1px solid rgba(13, 148, 136, 0.6);
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  .stage-dot.active {
-    height: 28px;
-    background: #0d9488;
-  }
-
-  @media (max-width: 768px) {
-    .cinematic-slide { position: relative; top: 0; min-height: auto; border-radius: 0; }
-    .stage-dots { display: none; }
-  }
-  </style>
+  <link rel="stylesheet" href="/css/glass-landing.css">
 
   <!-- Structured Data (Schema.org Dentist) -->
   <script type="application/ld+json">
@@ -403,7 +55,6 @@
     ]
   }
   </script>
-
 </head>
 <body>
 
@@ -433,7 +84,11 @@
       </nav>
 
       <div class="header-actions" id="header-auth-actions">
-        <button type="button" id="theme-toggle-btn" onclick="toggleDarkMode()" class="btn btn-secondary btn-sm">🌙</button>
+        <button type="button" id="theme-toggle-btn" onclick="toggleDarkMode()" class="btn btn-secondary btn-sm" aria-label="تبديل المظهر الليلي والنهاري">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
         <button type="button" id="lang-toggle-btn" onclick="toggleLanguage()" class="btn btn-secondary btn-sm">EN</button>
         <a href="/login.html" class="btn btn-secondary btn-sm" data-i18n="login_btn">تسجيل الدخول</a>
         <a href="#booking" class="btn btn-primary btn-sm" data-i18n="book_now">احجز موعدك</a>
@@ -453,9 +108,7 @@
     <div id="cinematic-scroll-track">
       <div id="cinematic-viewport">
 
-        <!-- ============================================================
-             المحطة 1 (0): الواجهة الرئيسية (Hero) + خطوات الزيارة
-             ============================================================ -->
+        <!-- المحطة 1 (0): الواجهة الرئيسية (Hero) + خطوات الزيارة -->
         <div class="cinematic-slide" data-stage="0" style="padding-top: 1.25rem; padding-bottom: 1.5rem; justify-content: flex-start;">
           <div class="container hero-grid">
             <div>
@@ -487,10 +140,10 @@
               </div>
             </div>
 
-            <!-- بطاقة خطوات الزيارة السريعة (قابلة للتعديل من لوحة الأدمن مع تمرير داخلي) -->
+            <!-- بطاقة خطوات الزيارة السريعة -->
             <aside id="visit-steps-card" class="card" aria-label="خطوات حجز الموعد" style="display: flex; flex-direction: column; max-height: 410px;">
               <h2 style="margin: 0 0 var(--space-3); font-size: var(--text-lg); flex-shrink: 0;" data-setting="visit_steps_title" data-i18n="journey_title">كيف تتم زيارتك في العيادة؟</h2>
-              
+
               <div id="visit-steps-scroll-area" style="overflow-y: auto; padding-inline-end: 6px; flex: 1 1 auto; scrollbar-width: thin;">
                 <ol id="dynamic-visit-steps-list" style="margin: 0; padding-inline-start: 1.25rem; display: flex; flex-direction: column; gap: var(--space-3); color: var(--text-secondary); font-size: var(--text-sm);">
                   <li>
@@ -515,7 +168,8 @@
               </div>
             </aside>
           </div>
-          <!-- الكادر الطبي المتخصص مدمج بشكل أنيق ومضغوط أسفل الواجهة الرئيسية -->
+
+          <!-- الكادر الطبي المتخصص -->
           <section id="doctors" class="container" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(148, 163, 184, 0.25);">
             <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.85rem;">
               <h2 class="section-title" style="font-size: var(--text-lg); margin: 0;" data-i18n="doctors_title">الكادر الطبي المتخصص</h2>
@@ -528,11 +182,7 @@
           </section>
         </div>
 
-
-
-        <!-- ============================================================
-             المحطة 2 (1): الخدمات العلاجية المعتمدة
-             ============================================================ -->
+        <!-- المحطة 2 (1): الخدمات العلاجية المعتمدة -->
         <div class="cinematic-slide" data-stage="1">
           <section id="services" class="section-block" style="padding: 0;">
             <div class="container">
@@ -548,13 +198,9 @@
           </section>
         </div>
 
-        <!-- ============================================================
-             المحطة 3 (2): حجز موعد زيارة (Book a Visit) + الكادر الطبي (Specialized Medical Team)
-             ============================================================ -->
+        <!-- المحطة 3 (2): حجز موعد زيارة -->
         <div class="cinematic-slide" data-stage="2">
           <div class="container" style="display: flex; flex-direction: column; gap: 2.5rem; padding-bottom: 2rem;">
-
-            <!-- أولاً: نموذج حجز موعد زيارة -->
             <section id="booking" class="section-block" style="padding: 0;">
               <div class="card" style="max-width: 56rem; margin: 0 auto; width: 100%;">
                 <div class="section-header" style="margin-bottom: var(--space-4); text-align: center;">
@@ -621,9 +267,7 @@
           </div>
         </div>
 
-        <!-- ============================================================
-             المحطة 4 (3): معلومات التواصل والموقع (Contact Info & Location) + الفوتر
-             ============================================================ -->
+        <!-- المحطة 4 (3): معلومات التواصل والموقع + الفوتر -->
         <div class="cinematic-slide" data-stage="3" style="justify-content: space-between;">
           <section class="section-block" style="padding: 0; margin: auto 0; width: 100%;">
             <div class="container">
@@ -685,7 +329,7 @@
             <div class="container footer-inner">
               <div>
                 <strong style="color: var(--text-primary);" data-setting="clinic_name" data-i18n="clinic_name">عيادة الابتسامة الذكية لطب الأسنان</strong>
-                <span style="margin-inline: var(--space-2);">—</span>
+                <span style="margin-inline: var(--space-2);">-</span>
                 <span data-i18n="footer_rights">جميع الحقوق محفوظة © 2026</span>
               </div>
               <div style="display: flex; gap: var(--space-4);">
@@ -709,8 +353,15 @@
     </div>
     <a href="#booking" class="btn btn-primary btn-sm">احجز الآن</a>
   </div>
-
+  <script src="/js/ui/core-controls.js"></script>
+  <script src="/js/ui/floating-ai.js"></script>
+  <script src="/js/ui/privacy-translator.js"></script>
   <script src="/js/ui-components.js"></script>
+  <script src="/js/landing/i18n-theme.js"></script>
+  <script src="/js/landing/cinematic-scroll.js"></script>
+  <script src="/js/landing/clinic-data.js"></script>
+  <script src="/js/landing/booking.js"></script>
   <script src="/js/landing.js"></script>
+
 </body>
 </html>

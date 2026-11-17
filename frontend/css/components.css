@@ -119,12 +119,15 @@ textarea:focus-visible,
   box-shadow: var(--shadow-xs);
 }
 
-.btn-primary:hover:not(:disabled):not([aria-busy="true"]) {
+.btn-primary:hover:not(:disabled):not([aria-busy="true"]),
+.btn-primary:focus-visible:not(:disabled):not([aria-busy="true"]) {
   background-color: var(--action-primary-hover);
+  color: var(--action-primary-text);
 }
 
 .btn-primary:active:not(:disabled):not([aria-busy="true"]) {
   background-color: var(--action-primary-active);
+  color: var(--action-primary-text);
   transform: translateY(1px);
 }
 

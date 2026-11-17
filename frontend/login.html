@@ -15,379 +15,15 @@
   <link rel="stylesheet" href="/css/animations.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/auth.css">
-
-  <style>
-    /* ============================================================
-       1. الخلفية الزجاجية وتنسيق الصفحة العام
-       ============================================================ */
-    body.auth-page {
-      background: radial-gradient(circle at 18% 20%, rgba(13, 148, 136, 0.16), transparent 45%),
-                  radial-gradient(circle at 82% 80%, rgba(56, 189, 248, 0.16), transparent 45%),
-                  linear-gradient(135deg, #f0fdfa 0%, #f8fafc 50%, #eff6ff 100%) !important;
-      min-height: 100vh;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .auth-topbar {
-      background: rgba(255, 255, 255, 0.65) !important;
-      backdrop-filter: blur(18px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.8) !important;
-    }
-
-    .auth-main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 7.2rem 1.25rem 3rem;
-      position: relative;
-    }
-
-    /* ============================================================
-       2. بطاقة تسجيل الدخول الزجاجية
-       ============================================================ */
-    .auth-card {
-      position: relative;
-      width: 100%;
-      max-width: 450px;
-      margin: 0 auto;
-      padding: 3.3rem 2rem 2rem !important;
-      border-radius: 24px !important;
-      background: rgba(255, 255, 255, 0.7) !important;
-      backdrop-filter: blur(22px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.92) !important;
-      box-shadow: 0 22px 55px rgba(15, 23, 42, 0.09) !important;
-      overflow: visible !important;
-    }
-
-    /* ============================================================
-       3. مسرح الطبيب الصغير (يجلس فعلياً على حافة البطاقة العلوية)
-       ============================================================ */
-    .mascot-perch-container {
-      position: absolute;
-      top: -102px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 170px;
-      height: 138px;
-      z-index: 30;
-      pointer-events: auto;
-      cursor: pointer;
-      user-select: none;
-      background: transparent !important;
-      filter: drop-shadow(0 12px 16px rgba(15, 23, 42, 0.14));
-    }
-
-    #little-doctor-svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-      background: transparent !important;
-    }
-
-    /* حركات الطبيب المتناغمة */
-    @keyframes doctorBreathe {
-      0%, 100% { transform: translateY(0px) scaleY(1); }
-      50% { transform: translateY(-2px) scaleY(1.012); }
-    }
-
-    @keyframes doctorWalkStep {
-      0%, 100% { transform: translateY(0px) rotate(-3deg); }
-      25% { transform: translateY(-7px) rotate(0deg); }
-      50% { transform: translateY(0px) rotate(3deg); }
-      75% { transform: translateY(-7px) rotate(0deg); }
-    }
-
-    @keyframes walkLegA {
-      0%, 100% { transform: rotate(-18deg) translateY(-2px); }
-      50% { transform: rotate(18deg) translateY(0px); }
-    }
-
-    @keyframes walkLegB {
-      0%, 100% { transform: rotate(18deg) translateY(0px); }
-      50% { transform: rotate(-18deg) translateY(-2px); }
-    }
-
-    @keyframes seatedLegSwingA {
-      0%, 100% { transform: rotate(0deg); }
-      50% { transform: rotate(-8deg); }
-    }
-
-    @keyframes seatedLegSwingB {
-      0%, 100% { transform: rotate(0deg); }
-      50% { transform: rotate(8deg); }
-    }
-
-    .doc-body-walking {
-      animation: doctorWalkStep 0.58s ease-in-out infinite;
-      transform-origin: 85px 102px;
-    }
-
-    .doc-body-seated {
-      animation: doctorBreathe 3.4s ease-in-out infinite;
-      transform-origin: 85px 102px;
-    }
-
-    .leg-left-walk {
-      transform-origin: 72px 96px;
-      animation: walkLegA 0.58s ease-in-out infinite;
-    }
-    .leg-right-walk {
-      transform-origin: 98px 96px;
-      animation: walkLegB 0.58s ease-in-out infinite;
-    }
-
-    .leg-left-seated {
-      transform-origin: 72px 98px;
-      animation: seatedLegSwingA 3.8s ease-in-out infinite;
-    }
-    .leg-right-seated {
-      transform-origin: 98px 98px;
-      animation: seatedLegSwingB 3.8s ease-in-out infinite 0.5s;
-    }
-
-    /* ============================================================
-       4. العناوين، التبويبات، الليبلز، والحقول
-       ============================================================ */
-    .auth-title {
-      text-align: center;
-      font-size: 1.5rem !important;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      margin: 0.25rem 0 0.35rem !important;
-      letter-spacing: -0.01em;
-    }
-
-    .auth-subtitle {
-      text-align: center;
-      font-size: 0.9rem !important;
-      color: #475569 !important;
-      margin: 0 0 1.4rem !important;
-    }
-
-    .auth-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.45rem;
-      padding: 0.35rem;
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.05) !important;
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      margin-bottom: 1.35rem;
-    }
-
-    .auth-tab-btn {
-      padding: 0.6rem 0.75rem !important;
-      border-radius: 10px !important;
-      font-size: 0.9rem !important;
-      font-weight: 700 !important;
-      border: 1px solid transparent !important;
-      background: transparent !important;
-      color: #475569 !important;
-      cursor: pointer;
-      transition: all 0.25s ease !important;
-    }
-
-    .auth-tab-btn[aria-selected="true"] {
-      background: rgba(255, 255, 255, 0.94) !important;
-      color: #0d9488 !important;
-      border-color: rgba(13, 148, 136, 0.25) !important;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06) !important;
-    }
-
-    .auth-panel {
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      padding: 0 !important;
-    }
-
-    .form-group {
-      margin-bottom: 1.05rem;
-      text-align: start;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 0.85rem !important;
-      font-weight: 700 !important;
-      color: #1e293b !important;
-      margin-bottom: 0.42rem !important;
-    }
-
-    .form-input {
-      width: 100%;
-      height: 44px;
-      padding: 0.6rem 0.9rem !important;
-      font-size: 0.92rem !important;
-      border-radius: 12px !important;
-      background: rgba(255, 255, 255, 0.84) !important;
-      color: #0f172a !important;
-      border: 1px solid rgba(148, 163, 184, 0.38) !important;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
-    }
-
-    .form-input:focus {
-      background: #ffffff !important;
-      border-color: #0d9488 !important;
-      box-shadow: 0 0 0 3.5px rgba(13, 148, 136, 0.16) !important;
-      outline: none;
-    }
-
-    .password-field-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .password-toggle-btn {
-      position: absolute;
-      inset-inline-end: 0.6rem;
-      background: transparent !important;
-      border: none !important;
-      color: #64748b !important;
-      padding: 0.35rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .password-toggle-btn:hover {
-      color: #0d9488 !important;
-    }
-
-    .auth-helper-row {
-      display: flex;
-      justify-content: flex-end;
-      margin: -0.35rem 0 1.1rem;
-    }
-
-    .text-link-btn {
-      background: transparent !important;
-      border: none !important;
-      color: #0d9488 !important;
-      font-size: 0.84rem !important;
-      font-weight: 600 !important;
-      cursor: pointer;
-      padding: 0;
-    }
-    .text-link-btn:hover {
-      text-decoration: underline;
-    }
-
-    button[type="submit"],
-    .btn-primary {
-      height: 46px;
-      border-radius: 12px !important;
-      font-size: 0.96rem !important;
-      font-weight: 700 !important;
-      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
-      color: #ffffff !important;
-      border: 1px solid rgba(13, 148, 136, 0.45) !important;
-      box-shadow: 0 8px 20px rgba(13, 148, 136, 0.25) !important;
-      opacity: 1 !important;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
-    }
-
-    button[type="submit"]:hover,
-    .btn-primary:hover {
-      filter: brightness(1.07);
-      transform: translateY(-1px);
-      box-shadow: 0 10px 24px rgba(13, 148, 136, 0.35) !important;
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.82) !important;
-      color: #0f172a !important;
-      border: 1px solid rgba(148, 163, 184, 0.35) !important;
-      font-weight: 700 !important;
-      opacity: 1 !important;
-    }
-    .btn-secondary:hover {
-      background: rgba(13, 148, 136, 0.14) !important;
-      color: #0d9488 !important;
-      border-color: #0d9488 !important;
-    }
-
-    .auth-footer-note {
-      margin-top: 1.35rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(148, 163, 184, 0.2);
-      text-align: center;
-      font-size: 0.8rem;
-      color: #64748b;
-    }
-    .auth-footer-note a {
-      color: #0d9488;
-      font-weight: 600;
-    }
-
-    /* ============================================================
-       5. الوضع الليلي الزجاجي الداكن
-       ============================================================ */
-    .dark-mode body.auth-page {
-      background: radial-gradient(circle at 18% 20%, rgba(13, 148, 136, 0.24), transparent 45%),
-                  radial-gradient(circle at 82% 80%, rgba(56, 189, 248, 0.16), transparent 45%),
-                  linear-gradient(135deg, #070b14 0%, #0f172a 55%, #091322 100%) !important;
-    }
-
-    .dark-mode .auth-topbar {
-      background: rgba(15, 23, 42, 0.72) !important;
-      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .dark-mode .auth-card {
-      background: rgba(15, 23, 42, 0.7) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45) !important;
-    }
-
-    .dark-mode .auth-title { color: #f8fafc !important; }
-    .dark-mode .auth-subtitle { color: #94a3b8 !important; }
-    .dark-mode .form-label { color: #e2e8f0 !important; }
-
-    .dark-mode .auth-tabs {
-      background: rgba(255, 255, 255, 0.05) !important;
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-    .dark-mode .auth-tab-btn { color: #94a3b8 !important; }
-    .dark-mode .auth-tab-btn[aria-selected="true"] {
-      background: rgba(45, 212, 191, 0.18) !important;
-      color: #2dd4bf !important;
-      border-color: rgba(45, 212, 191, 0.35) !important;
-    }
-
-    .dark-mode .form-input {
-      background: rgba(15, 23, 42, 0.78) !important;
-      color: #f8fafc !important;
-      border-color: rgba(255, 255, 255, 0.16) !important;
-    }
-    .dark-mode .form-input:focus {
-      border-color: #2dd4bf !important;
-      box-shadow: 0 0 0 3.5px rgba(45, 212, 191, 0.2) !important;
-    }
-
-    .dark-mode .btn-secondary {
-      background: rgba(30, 41, 59, 0.8) !important;
-      color: #f8fafc !important;
-      border-color: rgba(255, 255, 255, 0.16) !important;
-    }
-    .dark-mode .btn-secondary:hover {
-      background: rgba(45, 212, 191, 0.2) !important;
-      color: #5eead4 !important;
-      border-color: #2dd4bf !important;
-    }
-    .dark-mode .text-link-btn,
-    .dark-mode .auth-footer-note a { color: #2dd4bf !important; }
-  </style>
+  <link rel="stylesheet" href="/css/glass-auth.css">
 </head>
 <body class="auth-page">
   <div style="position: fixed; top: 1rem; left: 1rem; z-index: 100; display: flex; gap: 0.5rem;">
-    <button type="button" id="theme-toggle-btn" onclick="toggleLoginTheme()" class="btn btn-secondary btn-sm">🌙</button>
+    <button type="button" id="theme-toggle-btn" onclick="toggleLoginTheme()" class="btn btn-secondary btn-sm" aria-label="تبديل المظهر الليلي والنهاري">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
     <button type="button" id="lang-toggle-btn" onclick="toggleLoginLang()" class="btn btn-secondary btn-sm">EN</button>
     <a href="/" class="btn btn-secondary btn-sm">الرئيسية</a>
   </div>
@@ -409,7 +45,7 @@
   <main class="auth-main">
     <section class="auth-card animate-enter" aria-labelledby="auth-heading">
 
-      <!-- الطبيب الصغير التفاعلي (يجلس بوضوح على حافة البطاقة الزجاجية مع ظل تلامس وساقين متدليتين) -->
+      <!-- الطبيب الصغير التفاعلي -->
       <div
         class="mascot-perch-container"
         id="little-doctor-stage"
@@ -417,187 +53,184 @@
         aria-label="الطبيب الصغير التفاعلي"
         title="حرك الفأرة أو اضغط للتفاعل مع الطبيب"
       >
-        <svg id="little-doctor-svg" viewBox="0 0 170 142" xmlns="http://www.w3.org/2000/svg">
+        <div class="mascot-aura-ring" aria-hidden="true"></div>
+        <div class="mascot-pulse-wave" id="mascot-pulse-wave" aria-hidden="true"></div>
+
+        <svg id="little-doctor-svg" viewBox="0 0 190 154" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="coatGrad" x1="0" y1="0" x2="0" y2="1">
+            <radialGradient id="auraGlow" cx="50%" cy="48%" r="50%">
+              <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.28"/>
+              <stop offset="60%" stop-color="#0d9488" stop-opacity="0.1"/>
+              <stop offset="100%" stop-color="#0d9488" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="coatGrad" x1="0" y1="0" x2="0.2" y2="1">
               <stop offset="0%" stop-color="#ffffff"/>
-              <stop offset="75%" stop-color="#f1f5f9"/>
+              <stop offset="72%" stop-color="#f1f5f9"/>
               <stop offset="100%" stop-color="#cbd5e1"/>
-            </linearGradient>
-            <linearGradient id="coatShadow" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#e2e8f0"/>
-              <stop offset="100%" stop-color="#ffffff"/>
             </linearGradient>
             <linearGradient id="scrubGrad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stop-color="#14b8a6"/>
+              <stop offset="55%" stop-color="#0d9488"/>
               <stop offset="100%" stop-color="#0f766e"/>
             </linearGradient>
             <linearGradient id="pantsGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#0f766e"/>
               <stop offset="100%" stop-color="#115e59"/>
             </linearGradient>
-            <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fde6d8"/>
-              <stop offset="100%" stop-color="#f4bfa4"/>
-            </linearGradient>
-            <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#334155"/>
+            <radialGradient id="skinGrad" cx="44%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#fff1e6"/>
+              <stop offset="68%" stop-color="#fde0cc"/>
+              <stop offset="100%" stop-color="#f5bfa0"/>
+            </radialGradient>
+            <linearGradient id="hairGrad" x1="0" y1="0" x2="0.3" y2="1">
+              <stop offset="0%" stop-color="#475569"/>
+              <stop offset="50%" stop-color="#1e293b"/>
               <stop offset="100%" stop-color="#0f172a"/>
             </linearGradient>
+            <radialGradient id="cheekBlush" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#fb7185" stop-opacity="0.48"/>
+              <stop offset="100%" stop-color="#fb7185" stop-opacity="0"/>
+            </radialGradient>
             <radialGradient id="seatContactShadow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#0f172a" stop-opacity="0.34"/>
-              <stop offset="70%" stop-color="#0f172a" stop-opacity="0.12"/>
+              <stop offset="0%" stop-color="#0f172a" stop-opacity="0.28"/>
+              <stop offset="65%" stop-color="#0f172a" stop-opacity="0.1"/>
               <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
             </radialGradient>
           </defs>
 
-          <!-- ظل تلامس الجلوس على حافة البطاقة الزجاجية (يظهر عند جلوسه) -->
-          <ellipse id="seat-shadow" cx="85" cy="103" rx="34" ry="5.5" fill="url(#seatContactShadow)" opacity="0" style="transition: opacity 0.4s ease;"/>
+          <!-- الطبقة الخلفية: الهالة والظل -->
+          <circle cx="95" cy="72" r="64" fill="url(#auraGlow)"/>
+          <ellipse id="seat-shadow" cx="95" cy="116" rx="40" ry="6.5" fill="url(#seatContactShadow)" opacity="0"/>
 
-          <!-- مجموعة الجسم بالكامل -->
-          <g id="doc-whole-body" class="doc-body-walking">
+          <!-- نجوم وبريق تفاعلي عند المرور أو النجاح -->
+          <g id="mascot-sparkles" opacity="0">
+            <path d="M36 34 L38 39 L43 41 L38 43 L36 48 L34 43 L29 41 L34 39 Z" fill="#2dd4bf"/>
+            <path d="M154 28 L155.5 32 L159.5 33.5 L155.5 35 L154 39 L152.5 35 L148.5 33.5 L152.5 32 Z" fill="#38bdf8"/>
+            <circle cx="148" cy="56" r="2.2" fill="#14b8a6"/>
+            <circle cx="42" cy="58" r="2" fill="#38bdf8"/>
+          </g>
 
-            <!-- الساقان المتدليتان على حافة البطاقة (بوضعية جلوس ثلاثية الأبعاد: فخذ أفقي + ركبة مثنية + ساق متدلية) -->
+          <!-- مجسم الشخصية الكامل -->
+          <g id="doc-whole-body" class="doc-body-entering">
+
+            <!-- الأرجل المتأرجحة بهدوء على حافة البطاقة -->
             <g id="doc-legs-group">
-              <!-- الساق اليسرى -->
-              <g id="doc-leg-left" class="leg-left-walk">
-                <!-- الفخذ الجالس على الحافة -->
-                <rect x="64" y="92" width="14" height="11" rx="5.5" fill="#115e59"/>
-                <!-- الركبة والساق المتدلية للأمام -->
-                <rect x="65" y="97" width="12" height="23" rx="6" fill="url(#pantsGrad)"/>
-                <!-- خط ثنية البنطال عند الركبة -->
-                <path d="M66 101 Q71 103 76 101" fill="none" stroke="#042f2e" stroke-width="1.2" opacity="0.5"/>
-                <!-- الحذاء الطبي الأنيق -->
-                <path d="M61 117 C61 112, 79 112, 79 118 L79 122 C79 124.5, 60 124.5, 60 121 Z" fill="#1e293b"/>
-                <path d="M62 121.5 L78 121.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                <path d="M67 115 L73 115" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round"/>
+              <g id="doc-leg-left" class="leg-left-seated">
+                <rect x="73" y="106" width="13" height="22" rx="6.5" fill="url(#pantsGrad)"/>
+                <path d="M69 124 C69 119, 87 119, 87 125 L87 128.5 C87 131, 68 131, 68 128 Z" fill="#1e293b"/>
+                <path d="M70 128 L86 128" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
               </g>
-
-              <!-- الساق اليمنى -->
-              <g id="doc-leg-right" class="leg-right-walk">
-                <!-- الفخذ الجالس على الحافة -->
-                <rect x="92" y="92" width="14" height="11" rx="5.5" fill="#115e59"/>
-                <!-- الركبة والساق المتدلية للأمام -->
-                <rect x="93" y="97" width="12" height="23" rx="6" fill="url(#pantsGrad)"/>
-                <!-- خط ثنية البنطال عند الركبة -->
-                <path d="M94 101 Q99 103 104 101" fill="none" stroke="#042f2e" stroke-width="1.2" opacity="0.5"/>
-                <!-- الحذاء الطبي الأنيق -->
-                <path d="M91 117 C91 112, 109 112, 109 118 L109 122 C109 124.5, 90 124.5, 90 121 Z" fill="#1e293b"/>
-                <path d="M92 121.5 L108 121.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                <path d="M97 115 L103 115" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round"/>
+              <g id="doc-leg-right" class="leg-right-seated">
+                <rect x="104" y="106" width="13" height="22" rx="6.5" fill="url(#pantsGrad)"/>
+                <path d="M103 124 C103 119, 121 119, 121 125 L121 128.5 C121 131, 102 131, 102 128 Z" fill="#1e293b"/>
+                <path d="M104 128 L120 128" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
               </g>
             </g>
 
             <!-- الرقبة -->
-            <rect x="79" y="55" width="12" height="11" rx="5" fill="#eab396"/>
+            <rect x="88" y="64" width="14" height="12" rx="6" fill="#f3be9f"/>
 
-            <!-- الجذع والمعطف الطبي الغني بالتفاصيل -->
-            <g id="doc-torso">
-              <!-- القميص الداخلي (Scrubs) -->
-              <path d="M62 63 L108 63 L112 97 C112 100, 108 102, 103 102 L67 102 C62 102, 58 100, 58 97 Z" fill="url(#scrubGrad)"/>
-              <!-- ياقة V مع ظل -->
-              <path d="M77 63 L85 75 L93 63" fill="none" stroke="#042f2e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+            <!-- الجذع والمعطف الطبي -->
+            <g id="doc-torso" style="transform-origin: 95px 112px;">
+              <path d="M69 73 L121 73 L125 109 C125 113, 120 115, 114 115 L76 115 C70 115, 65 113, 65 109 Z" fill="url(#scrubGrad)"/>
+              <path d="M86 73 L95 86 L104 73" fill="none" stroke="#042f2e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
 
-              <!-- الجزء الأيسر من المعطف الأبيض -->
-              <path d="M60 64 C60 60, 71 59, 77 63 L83 102 L58 102 C55 102, 54 98, 55 93 Z" fill="url(#coatGrad)" stroke="#cbd5e1" stroke-width="1.1"/>
-              <!-- طية ياقة المعطف اليسرى -->
-              <path d="M72 62 L78 76 L71 79 L68 65 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+              <!-- الجانب الأيسر من المعطف -->
+              <path d="M67 74 C67 70, 79 69, 86 73 L93 115 L65 115 C61 115, 60 110, 62 104 Z" fill="url(#coatGrad)" stroke="#cbd5e1" stroke-width="1.1"/>
+              <path d="M80 72 L87 88 L79 91 L76 76 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
 
-              <!-- الجزء الأيمن من المعطف الأبيض -->
-              <path d="M110 64 C110 60, 99 59, 93 63 L87 102 L112 102 C115 102, 116 98, 115 93 Z" fill="url(#coatGrad)" stroke="#cbd5e1" stroke-width="1.1"/>
-              <!-- طية ياقة المعطف اليمنى -->
-              <path d="M98 62 L92 76 L99 79 L102 65 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+              <!-- الجانب الأيمن من المعطف -->
+              <path d="M123 74 C123 70, 111 69, 104 73 L97 115 L125 115 C129 115, 130 110, 128 104 Z" fill="url(#coatGrad)" stroke="#cbd5e1" stroke-width="1.1"/>
+              <path d="M110 72 L103 88 L111 91 L114 76 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
 
-              <!-- جيب المعطف مع قلم ومرآة فحص الأسنان -->
-              <rect x="94" y="81" width="13" height="14" rx="2.5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-              <line x1="98" y1="81" x2="98" y2="75" stroke="#0d9488" stroke-width="2.2" stroke-linecap="round"/>
-              <line x1="103" y1="81" x2="104" y2="74" stroke="#64748b" stroke-width="1.6" stroke-linecap="round"/>
-              <circle cx="104.3" cy="73.5" r="2.2" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
+              <!-- الجيب والأدوات -->
+              <rect x="105" y="93" width="14" height="15" rx="3" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+              <line x1="109" y1="93" x2="109" y2="86" stroke="#0d9488" stroke-width="2.3" stroke-linecap="round"/>
+              <line x1="115" y1="93" x2="116" y2="85" stroke="#64748b" stroke-width="1.7" stroke-linecap="round"/>
+              <circle cx="116.3" cy="84.2" r="2.4" fill="#e2e8f0" stroke="#64748b" stroke-width="0.9"/>
 
-              <!-- أزرار المعطف -->
-              <circle cx="85" cy="84" r="1.6" fill="#94a3b8"/>
-              <circle cx="85" cy="93" r="1.6" fill="#94a3b8"/>
-
-              <!-- السماعة الطبية المتدلية حول الرقبة -->
-              <g id="doc-stethoscope">
-                <path d="M72 62 C69 75, 75 83, 85 83 C95 83, 101 75, 98 62" fill="none" stroke="#1e293b" stroke-width="2.6" stroke-linecap="round"/>
-                <path d="M85 83 L85 89" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
-                <circle cx="85" cy="91" r="4.2" fill="#cbd5e1" stroke="#334155" stroke-width="1.5"/>
-                <circle cx="85" cy="91" r="1.8" fill="#0d9488"/>
+              <!-- السماعة الطبية المتأرجحة -->
+              <g id="doc-stethoscope" style="transform-origin: 95px 74px;">
+                <path d="M81 72 C77 86, 84 95, 95 95 C106 95, 113 86, 109 72" fill="none" stroke="#1e293b" stroke-width="2.6" stroke-linecap="round"/>
+                <path d="M95 95 L95 102" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="95" cy="104.5" r="4.8" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"/>
+                <circle cx="95" cy="104.5" r="2" fill="#0d9488"/>
               </g>
             </g>
 
-            <!-- الرأس التفاعلي التفصيلي -->
-            <g id="doc-head-rig" style="transform-origin: 85px 46px;">
-              <!-- الأذنان مع تفاصيل داخلية -->
-              <circle cx="57" cy="40" r="6" fill="#f4bfa4"/>
-              <path d="M56 38 Q54 40 56 42" fill="none" stroke="#d99b7e" stroke-width="1.2" stroke-linecap="round"/>
-              <circle cx="113" cy="40" r="6" fill="#f4bfa4"/>
-              <path d="M114 38 Q116 40 114 42" fill="none" stroke="#d99b7e" stroke-width="1.2" stroke-linecap="round"/>
-
-              <!-- الوجه -->
-              <rect x="59" y="15" width="52" height="46" rx="23" fill="url(#skinGrad)"/>
-
-              <!-- الشعر العصري متعدد الطبقات -->
-              <path d="M58 34 C57 14, 71 7, 86 8 C102 8, 113 17, 112 34 C110 23, 101 19, 92 20 C83 21, 74 17, 66 21 C61 23, 59 29, 58 34 Z" fill="url(#hairGrad)"/>
-              <path d="M74 10 Q85 5 96 11" fill="none" stroke="#475569" stroke-width="1.6" stroke-linecap="round"/>
-
-              <!-- حزام ومرآة طبيب الأسنان الفضية على الجبهة -->
-              <path d="M60 21 Q85 18 110 21" fill="none" stroke="#475569" stroke-width="2"/>
-              <circle cx="85" cy="16" r="7" fill="#e2e8f0" stroke="#475569" stroke-width="1.6"/>
-              <circle cx="85" cy="16" r="4" fill="#ffffff"/>
-              <path d="M82.5 13.5 L87.5 18.5" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
-
-              <!-- الحاجبان التعبيريان -->
-              <g id="doc-brows" style="transition: transform 0.25s ease;">
-                <path id="brow-left" d="M67 30 Q72.5 27.5 78 30" fill="none" stroke="#1e293b" stroke-width="2.3" stroke-linecap="round"/>
-                <path id="brow-right" d="M92 30 Q97.5 27.5 103 30" fill="none" stroke="#1e293b" stroke-width="2.3" stroke-linecap="round"/>
+            <!-- مجموعة الرأس بنظام عمق 2.5D متعدد الطبقات -->
+            <g id="doc-head-rig" style="transform-origin: 95px 52px;">
+              <!-- طبقة الأذنين والشعر الخلفي (تتحرك عكسياً لخلق عمق الدوران) -->
+              <g id="doc-head-back">
+                <circle cx="64" cy="46" r="6.5" fill="#f3be9f"/>
+                <path d="M63 44 Q61 46 63 48" fill="none" stroke="#d99b7e" stroke-width="1.2" stroke-linecap="round"/>
+                <circle cx="126" cy="46" r="6.5" fill="#f3be9f"/>
+                <path d="M127 44 Q129 46 127 48" fill="none" stroke="#d99b7e" stroke-width="1.2" stroke-linecap="round"/>
               </g>
 
-              <!-- العيون والبؤبؤان المتحركان -->
-              <g id="doc-eyes-group">
-                <!-- العين اليسرى -->
-                <circle cx="72.5" cy="38" r="6.2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.9"/>
-                <g id="pupil-left">
-                  <circle cx="72.5" cy="38" r="3.4" fill="#0f172a"/>
-                  <circle cx="72.5" cy="38" r="1.8" fill="#0d9488" opacity="0.45"/>
-                  <circle cx="73.8" cy="36.6" r="1.2" fill="#ffffff"/>
+              <!-- قاعدة الوجه الناعمة -->
+              <rect x="66" y="18" width="58" height="52" rx="26" fill="url(#skinGrad)"/>
+
+              <!-- الشعر العصري والمرآة الطبية -->
+              <g id="doc-hair-layer">
+                <path d="M65 39 C64 17, 79 9, 96 10 C113 10, 126 20, 125 39 C123 27, 113 22, 103 23 C93 24, 83 19, 74 24 C68 27, 66 33, 65 39 Z" fill="url(#hairGrad)"/>
+                <path d="M81 13 Q95 8 109 14" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+                <path d="M67 24 Q95 20 123 24" fill="none" stroke="#475569" stroke-width="2"/>
+                <circle cx="95" cy="18" r="7.5" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+                <circle cx="95" cy="18" r="4.3" fill="#ffffff"/>
+                <path d="M92.3 15.3 L97.7 20.7" stroke="#38bdf8" stroke-width="1.7" stroke-linecap="round" opacity="0.8"/>
+              </g>
+
+              <!-- طبقة الملامح الأمامية (تتحرك بمدى أوسع لإبراز البعد الثالث) -->
+              <g id="doc-face-front">
+                <g id="doc-brows" style="transition: transform 0.25s ease;">
+                  <path id="brow-left" d="M75 34 Q81 31 87 34" fill="none" stroke="#1e293b" stroke-width="2.3" stroke-linecap="round"/>
+                  <path id="brow-right" d="M103 34 Q109 31 115 34" fill="none" stroke="#1e293b" stroke-width="2.3" stroke-linecap="round"/>
                 </g>
-                <ellipse id="eyelid-left" cx="72.5" cy="38" rx="6.4" ry="0" fill="#f4bfa4"/>
 
-                <!-- العين اليمنى -->
-                <circle cx="97.5" cy="38" r="6.2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.9"/>
-                <g id="pupil-right">
-                  <circle cx="97.5" cy="38" r="3.4" fill="#0f172a"/>
-                  <circle cx="97.5" cy="38" r="1.8" fill="#0d9488" opacity="0.45"/>
-                  <circle cx="98.8" cy="36.6" r="1.2" fill="#ffffff"/>
+                <g id="doc-eyes-group">
+                  <!-- العين اليسرى -->
+                  <circle cx="81" cy="43" r="6.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.9"/>
+                  <g id="pupil-left">
+                    <circle cx="81" cy="43" r="3.8" fill="#0f172a"/>
+                    <circle cx="81" cy="43" r="2.1" fill="#0d9488" opacity="0.55"/>
+                    <circle cx="82.5" cy="41.4" r="1.4" fill="#ffffff"/>
+                    <circle cx="79.6" cy="44.3" r="0.65" fill="#ffffff" opacity="0.8"/>
+                  </g>
+                  <ellipse id="eyelid-left" cx="81" cy="43" rx="7" ry="0" fill="#f6c7ab"/>
+
+                  <!-- العين اليمنى -->
+                  <circle cx="109" cy="43" r="6.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.9"/>
+                  <g id="pupil-right">
+                    <circle cx="109" cy="43" r="3.8" fill="#0f172a"/>
+                    <circle cx="109" cy="43" r="2.1" fill="#0d9488" opacity="0.55"/>
+                    <circle cx="110.5" cy="41.4" r="1.4" fill="#ffffff"/>
+                    <circle cx="107.6" cy="44.3" r="0.65" fill="#ffffff" opacity="0.8"/>
+                  </g>
+                  <ellipse id="eyelid-right" cx="109" cy="43" rx="7" ry="0" fill="#f6c7ab"/>
                 </g>
-                <ellipse id="eyelid-right" cx="97.5" cy="38" rx="6.4" ry="0" fill="#f4bfa4"/>
+
+                <!-- الأنف وتورّد الخدين -->
+                <path d="M94 46.5 Q95 49.5 96.8 48.5" fill="none" stroke="#d99b7e" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="72" cy="51.5" rx="6" ry="3.5" fill="url(#cheekBlush)"/>
+                <ellipse cx="118" cy="51.5" rx="6" ry="3.5" fill="url(#cheekBlush)"/>
+
+                <!-- الفم والابتسامة -->
+                <path id="doc-mouth" d="M87.5 55.5 Q95 62 102.5 55.5" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
               </g>
-
-              <!-- الأنف الصغير -->
-              <path d="M84 41 Q85 44 86.5 43" fill="none" stroke="#d99b7e" stroke-width="1.6" stroke-linecap="round"/>
-
-              <!-- الخدود اللطيفة -->
-              <ellipse cx="64.5" cy="46" rx="4.2" ry="2.4" fill="#fda4af" opacity="0.55"/>
-              <ellipse cx="105.5" cy="46" rx="4.2" ry="2.4" fill="#fda4af" opacity="0.55"/>
-
-              <!-- الفم والابتسامة -->
-              <path id="doc-mouth" d="M78 49 Q85 55.5 92 49" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
             </g>
 
-            <!-- الذراع اليسرى (تستخدم للتغطية أو التلويح) -->
-            <g id="doc-arm-left" style="transform-origin: 59px 67px; transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);">
-              <path d="M59 67 C49 76, 50 88, 59 93" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
-              <path d="M59 67 C49 76, 50 88, 59 93" fill="none" stroke="#cbd5e1" stroke-width="1.3" stroke-linecap="round"/>
-              <circle cx="59" cy="93" r="4.8" fill="#f4bfa4"/>
+            <!-- الطبقة الأمامية: الذراعان واليدان لإخفاء العينين أو التلويح -->
+            <g id="doc-arm-left" style="transform-origin: 67px 78px; transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);">
+              <path d="M67 78 C56 87, 57 100, 66 105" fill="none" stroke="#ffffff" stroke-width="10.5" stroke-linecap="round"/>
+              <path d="M67 78 C56 87, 57 100, 66 105" fill="none" stroke="#cbd5e1" stroke-width="1.3" stroke-linecap="round"/>
+              <circle cx="66" cy="105" r="5.4" fill="#fde0cc" stroke="#e5b396" stroke-width="0.9"/>
             </g>
 
-            <!-- الذراع اليمنى (تستخدم للتلويح الترحيبي وتغطية العينين) -->
-            <g id="doc-arm-right" style="transform-origin: 111px 67px; transition: transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);">
-              <path d="M111 67 C121 76, 120 88, 111 93" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
-              <path d="M111 67 C121 76, 120 88, 111 93" fill="none" stroke="#cbd5e1" stroke-width="1.3" stroke-linecap="round"/>
-              <circle cx="111" cy="93" r="4.8" fill="#f4bfa4"/>
+            <g id="doc-arm-right" style="transform-origin: 123px 78px; transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);">
+              <path d="M123 78 C134 87, 133 100, 124 105" fill="none" stroke="#ffffff" stroke-width="10.5" stroke-linecap="round"/>
+              <path d="M123 78 C134 87, 133 100, 124 105" fill="none" stroke="#cbd5e1" stroke-width="1.3" stroke-linecap="round"/>
+              <circle cx="124" cy="105" r="5.4" fill="#fde0cc" stroke="#e5b396" stroke-width="0.9"/>
             </g>
 
           </g>
@@ -615,7 +248,6 @@
         <span>لديك طلب موعد محفوظ؛ سيتم تثبيته تلقائياً فور تسجيل دخولك.</span>
       </div>
 
-      <!-- Mode Switcher Tabs -->
       <div class="auth-tabs" role="tablist" aria-label="اختر نوع العملية">
         <button type="button" role="tab" class="auth-tab-btn" id="tab-login" aria-selected="true" aria-controls="panel-login">
           تسجيل الدخول
@@ -710,7 +342,7 @@
         </button>
       </form>
 
-      <!-- 4. Reset Password Panel (Activated via ?token=... in URL) -->
+      <!-- 4. Reset Password Panel -->
       <form id="panel-reset" class="auth-panel" hidden novalidate>
         <div class="form-group">
           <label for="reset-new-password" class="form-label">كلمة المرور الجديدة</label>
@@ -737,307 +369,12 @@
     </section>
   </main>
 
+  
+  <script src="/js/ui/core-controls.js"></script>
+  <script src="/js/ui/floating-ai.js"></script>
+  <script src="/js/ui/privacy-translator.js"></script>
   <script src="/js/ui-components.js"></script>
   <script src="/js/auth.js"></script>
-
-  <!-- محرك الدخول الدرامي البطيء والتفاعلات الغنية للطبيب الصغير -->
-  <script>
-    (function initLittleDoctorMascot() {
-      const stage = document.getElementById('little-doctor-stage');
-      const wholeBody = document.getElementById('doc-whole-body');
-      const seatShadow = document.getElementById('seat-shadow');
-      const legLeft = document.getElementById('doc-leg-left');
-      const legRight = document.getElementById('doc-leg-right');
-      const headRig = document.getElementById('doc-head-rig');
-      const brows = document.getElementById('doc-brows');
-      const pupilLeft = document.getElementById('pupil-left');
-      const pupilRight = document.getElementById('pupil-right');
-      const eyelidLeft = document.getElementById('eyelid-left');
-      const eyelidRight = document.getElementById('eyelid-right');
-      const armLeft = document.getElementById('doc-arm-left');
-      const armRight = document.getElementById('doc-arm-right');
-      const mouth = document.getElementById('doc-mouth');
-
-      if (!stage || !headRig) return;
-
-      // 1. الدخول الدرامي البطيء من خارج الشاشة ثم القفز والجلوس فوق حافة البطاقة
-      const startOffset = Math.min(window.innerWidth * 0.68, 620);
-      const walkDuration = 2600; // 2.6 ثانية مشي درامي متأنٍ
-      let startTime = null;
-      let isSeated = false;
-
-      // إمالة الجسد قليلاً باتجاه المشي
-      stage.style.transform = `translateX(calc(-50% + ${startOffset}px))`;
-
-      function easeOutCubic(t) {
-        return 1 - Math.pow(1 - t, 3);
-      }
-
-      function animateDramaticEntrance(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const elapsed = timestamp - startTime;
-        const progress = Math.min(1, elapsed / walkDuration);
-        const eased = easeOutCubic(progress);
-
-        const currentWalkX = startOffset * (1 - eased);
-        stage.style.transform = `translateX(calc(-50% + ${currentWalkX}px))`;
-
-        // ينظر باتجاه طريقه أثناء المشي
-        targetX = progress < 0.85 ? -0.65 : 0;
-
-        if (progress < 1) {
-          requestAnimationFrame(animateDramaticEntrance);
-        } else {
-          // لحظة الوصول: توقف قصير ثم قفزة درامية للجلوس على حافة البطاقة
-          stage.style.transform = 'translateX(-50%)';
-          targetX = 0;
-          targetY = 0.4;
-
-          setTimeout(() => {
-            // قفزة الجلوس فوق الحافة
-            wholeBody.classList.remove('doc-body-walking');
-            legLeft.classList.remove('leg-left-walk');
-            legRight.classList.remove('leg-right-walk');
-
-            wholeBody.animate([
-              { transform: 'translateY(0px) scaleY(0.92)' },
-              { transform: 'translateY(-18px) scaleY(1.06)' },
-              { transform: 'translateY(3px) scaleY(0.95)' },
-              { transform: 'translateY(0px) scaleY(1)' }
-            ], { duration: 580, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
-
-            setTimeout(() => {
-              isSeated = true;
-              wholeBody.classList.add('doc-body-seated');
-              legLeft.classList.add('leg-left-seated');
-              legRight.classList.add('leg-right-seated');
-              if (seatShadow) seatShadow.style.opacity = '1';
-              targetY = 0;
-
-              // تلويحة ترحيبية ودودة بعد الجلوس مباشرة
-              waveHello();
-            }, 520);
-          }, 220);
-        }
-      }
-
-      requestAnimationFrame(animateDramaticEntrance);
-
-      // دالة التلويح الترحيبي باليد
-      function waveHello() {
-        if (isCoveringEyes) return;
-        mouth.setAttribute('d', 'M76 48 Q85 58 94 48');
-        brows.style.transform = 'translateY(-2px)';
-
-        armRight.style.transform = 'translate(4px, -24px) rotate(-135deg)';
-        setTimeout(() => {
-          if (!isCoveringEyes) armRight.style.transform = 'translate(4px, -24px) rotate(-105deg)';
-        }, 220);
-        setTimeout(() => {
-          if (!isCoveringEyes) armRight.style.transform = 'translate(4px, -24px) rotate(-138deg)';
-        }, 440);
-        setTimeout(() => {
-          if (!isCoveringEyes) {
-            armRight.style.transform = 'translate(0px, 0px) rotate(0deg)';
-            mouth.setAttribute('d', 'M78 49 Q85 55.5 92 49');
-            brows.style.transform = 'translateY(0px)';
-          }
-        }, 720);
-      }
-
-      // 2. تتبع حركة مؤشر الفأرة اللحظي بنعومة فيزيائية
-      let targetX = 0;
-      let targetY = 0;
-      let currentX = 0;
-      let currentY = 0;
-      let isCoveringEyes = false;
-      let isPeeking = false;
-
-      window.addEventListener('mousemove', (e) => {
-        if (!isSeated) return;
-        const rect = stage.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        const dx = (e.clientX - centerX) / (window.innerWidth / 2);
-        const dy = (e.clientY - centerY) / (window.innerHeight / 2);
-
-        targetX = Math.max(-1, Math.min(1, dx));
-        targetY = Math.max(-1, Math.min(1, dy));
-
-        // رفع الحاجبين بلطف عندما يقترب المؤشر من الطبيب
-        const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
-        if (!isCoveringEyes) {
-          brows.style.transform = dist < 170 ? 'translateY(-2px)' : 'translateY(0px)';
-        }
-      });
-
-      // التفاعل مع التبديل بين تبويبي (تسجيل الدخول / حساب مريض جديد)
-      document.querySelectorAll('.auth-tab-btn').forEach((tabBtn) => {
-        tabBtn.addEventListener('click', () => {
-          if (isSeated) waveHello();
-        });
-      });
-
-      // تتبع الكتابة داخل حقول النص والبريد الإلكتروني
-      document.querySelectorAll('.track-gaze').forEach((input) => {
-        input.addEventListener('focus', () => {
-          uncoverEyes();
-          targetY = 0.65;
-          brows.style.transform = 'translateY(-1px)';
-        });
-        input.addEventListener('input', (e) => {
-          const len = e.target.value.length;
-          const progress = Math.min(1, len / 24);
-          targetX = (document.dir === 'rtl' ? 0.5 - progress : progress - 0.5) * 1.35;
-          targetY = 0.72;
-        });
-        input.addEventListener('blur', () => {
-          targetY = 0;
-          brows.style.transform = 'translateY(0px)';
-        });
-      });
-
-      // تغطية العينين باحترام عند التركيز على كلمة المرور
-      function coverEyes(peek = false) {
-        isCoveringEyes = true;
-        isPeeking = peek;
-        brows.style.transform = 'translateY(-2.5px)';
-        if (peek) {
-          armLeft.style.transform = 'translate(12px, -48px) rotate(138deg)';
-          armRight.style.transform = 'translate(-12px, -40px) rotate(-118deg)';
-          mouth.setAttribute('d', 'M80 50 Q85 53 90 50');
-        } else {
-          armLeft.style.transform = 'translate(13px, -50px) rotate(150deg)';
-          armRight.style.transform = 'translate(-13px, -50px) rotate(-150deg)';
-          mouth.setAttribute('d', 'M81 50 Q85 48 89 50');
-        }
-      }
-
-      function uncoverEyes() {
-        isCoveringEyes = false;
-        isPeeking = false;
-        brows.style.transform = 'translateY(0px)';
-        armLeft.style.transform = 'translate(0px, 0px) rotate(0deg)';
-        armRight.style.transform = 'translate(0px, 0px) rotate(0deg)';
-        mouth.setAttribute('d', 'M78 49 Q85 55.5 92 49');
-      }
-
-      document.querySelectorAll('.privacy-secret').forEach((pwInput) => {
-        pwInput.addEventListener('focus', () => {
-          coverEyes(pwInput.type === 'text');
-        });
-        pwInput.addEventListener('blur', () => {
-          setTimeout(() => {
-            if (!document.activeElement?.classList.contains('privacy-secret')) {
-              uncoverEyes();
-            }
-          }, 120);
-        });
-      });
-
-      document.querySelectorAll('.password-toggle-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          setTimeout(() => {
-            const targetId = btn.getAttribute('data-target');
-            const input = document.getElementById(targetId);
-            if (input && document.activeElement === input) {
-              coverEyes(input.type === 'text');
-            }
-          }, 20);
-        });
-      });
-
-      // التفاعل عند النقر على أزرار الإرسال (هزة رأس متعاطفة إذا وجد خطأ في الإدخال)
-      document.querySelectorAll('form').forEach((form) => {
-        form.addEventListener('submit', () => {
-          setTimeout(() => {
-            const hasError = Array.from(form.querySelectorAll('.form-error-text'))
-              .some(el => el.textContent.trim().length > 0);
-            if (hasError && !isCoveringEyes) {
-              mouth.setAttribute('d', 'M80 52 Q85 48 90 52');
-              headRig.animate([
-                { transform: 'rotate(0deg)' },
-                { transform: 'rotate(-9deg)' },
-                { transform: 'rotate(9deg)' },
-                { transform: 'rotate(-6deg)' },
-                { transform: 'rotate(0deg)' }
-              ], { duration: 500, easing: 'ease-in-out' });
-              setTimeout(() => {
-                mouth.setAttribute('d', 'M78 49 Q85 55.5 92 49');
-              }, 900);
-            }
-          }, 80);
-        });
-      });
-
-      // 3. حلقة التحديث المستمرة (60fps) لتحريك الرأس والبؤبؤين بتناغم
-      function updateHeadAndEyes() {
-        currentX += (targetX - currentX) * 0.11;
-        currentY += (targetY - currentY) * 0.11;
-
-        const headRotate = currentX * 14;
-        const headShiftX = currentX * 3.8;
-        const headShiftY = currentY * 2.6;
-
-        headRig.style.transform = `translate(${headShiftX}px, ${headShiftY}px) rotate(${headRotate}deg)`;
-
-        const pupilX = currentX * 2.8;
-        const pupilY = currentY * 2.3;
-        pupilLeft.setAttribute('transform', `translate(${pupilX}, ${pupilY})`);
-        pupilRight.setAttribute('transform', `translate(${pupilX}, ${pupilY})`);
-
-        requestAnimationFrame(updateHeadAndEyes);
-      }
-      requestAnimationFrame(updateHeadAndEyes);
-
-      // 4. رمش تلقائي طبيعي
-      setInterval(() => {
-        if (isCoveringEyes && !isPeeking) return;
-        eyelidLeft.setAttribute('ry', '6.2');
-        eyelidRight.setAttribute('ry', '6.2');
-        setTimeout(() => {
-          eyelidLeft.setAttribute('ry', '0');
-          eyelidRight.setAttribute('ry', '0');
-        }, 145);
-      }, 3600);
-
-      // 5. التفاعل عند النقر على الطبيب نفسه
-      stage.addEventListener('click', () => {
-        if (!isSeated) return;
-        waveHello();
-        headRig.animate([
-          { transform: 'rotate(0deg)' },
-          { transform: 'rotate(-11deg)' },
-          { transform: 'rotate(11deg)' },
-          { transform: 'rotate(0deg)' }
-        ], { duration: 480, easing: 'ease-in-out' });
-      });
-    })();
-
-    function toggleLoginTheme() {
-      const isDark = document.documentElement.classList.toggle('dark-mode');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      document.getElementById('theme-toggle-btn').textContent = isDark ? '☀️' : '🌙';
-    }
-
-    function toggleLoginLang() {
-      const current = document.documentElement.lang || 'ar';
-      const next = current === 'ar' ? 'en' : 'ar';
-      localStorage.setItem('app_lang', next);
-      location.reload();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('dark-mode');
-        document.getElementById('theme-toggle-btn').textContent = '☀️';
-      }
-      const savedLang = localStorage.getItem('app_lang') || 'ar';
-      document.documentElement.lang = savedLang;
-      document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-      document.getElementById('lang-toggle-btn').textContent = savedLang === 'ar' ? 'EN' : 'عربي';
-    });
-  </script>
+  <script type="module" src="/js/auth/mascot-doctor.js"></script>
 </body>
 </html>

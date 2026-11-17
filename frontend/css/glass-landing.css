@@ -1,0 +1,399 @@
+/* ============================================================
+   1. شفافية الحاويات والفيديو الخلفي في الوضعين النهاري والليلي
+   ============================================================ */
+html, body, main, .hero-section, .section-block, .page-shell {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+#dental-bg-video-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: #f8fafc;
+  transition: background-color 0.4s ease;
+}
+
+.dark-mode #dental-bg-video-wrap {
+  background-color: #090d16;
+}
+
+#dental-bg-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+  filter: brightness(1.04) contrast(1.05);
+  transform: scale(1.12) translate3d(0, 0, 0);
+  will-change: transform;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.dark-mode #dental-bg-video {
+  opacity: 0.45;
+  filter: brightness(0.75) contrast(1.15);
+}
+
+/* ============================================================
+   2. الشريط العلوي (Navbar) والشريط السفلي (Footer) الزجاجيان
+   ============================================================ */
+.site-header, header, .navbar, .site-footer, footer {
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+.site-footer, footer {
+  border-bottom: none !important;
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+.dark-mode .site-header, .dark-mode header, .dark-mode .navbar,
+.dark-mode .site-footer, .dark-mode footer {
+  background: rgba(15, 23, 42, 0.78) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+.dark-mode .site-header a, .dark-mode header a, .dark-mode .brand-name,
+.dark-mode .site-footer a, .dark-mode .site-footer span {
+  color: #f1f5f9 !important;
+}
+
+.dark-mode .site-header a:hover, .dark-mode .site-footer a:hover {
+  color: #38bdf8 !important;
+}
+
+#header-auth-actions .btn-secondary,
+.site-header a.btn-secondary {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(13, 148, 136, 0.35) !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06) !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+#header-auth-actions .btn-secondary:hover,
+.site-header a.btn-secondary:hover {
+  background: rgba(13, 148, 136, 0.15) !important;
+  color: #0d9488 !important;
+  border-color: #0d9488 !important;
+}
+
+.dark-mode #header-auth-actions .btn-secondary,
+.dark-mode .site-header a.btn-secondary {
+  background: rgba(30, 41, 59, 0.85) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(45, 212, 191, 0.35) !important;
+}
+
+.dark-mode #header-auth-actions .btn-secondary:hover,
+.dark-mode .site-header a.btn-secondary:hover {
+  background: rgba(45, 212, 191, 0.22) !important;
+  color: #5eead4 !important;
+  border-color: #2dd4bf !important;
+}
+
+/* ============================================================
+   3. النصوص الرئيسية في الوضع الليلي
+   ============================================================ */
+.dark-mode body, .dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode strong, .dark-mode .section-title {
+  color: #f8fafc !important;
+}
+
+.dark-mode p, .dark-mode .section-subtitle, .dark-mode .metric-label, .dark-mode .form-label {
+  color: #cbd5e1 !important;
+}
+
+.dark-mode #visit-steps-card,
+.dark-mode #visit-steps-card ol,
+.dark-mode #visit-steps-card li,
+.dark-mode #visit-steps-card span {
+  color: #e2e8f0 !important;
+}
+
+.dark-mode #visit-steps-card h2,
+.dark-mode #visit-steps-card strong {
+  color: #ffffff !important;
+}
+
+/* ============================================================
+   4. البطاقات الزجاجية الشفافة (Glassmorphism)
+   ============================================================ */
+main, .site-header, .site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.service-card, .card, .doctor-card, aside.card {
+  background: rgba(255, 255, 255, 0.42) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06) !important;
+  border-radius: 16px !important;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.25s ease-out, box-shadow 0.3s ease, border-color 0.3s ease, background 0.35s ease;
+}
+
+.service-card:hover, .doctor-card:hover, #visit-steps-card:hover, #contact.card:hover {
+  border-color: rgba(13, 148, 136, 0.55) !important;
+  box-shadow: 0 18px 38px rgba(13, 148, 136, 0.16) !important;
+}
+
+.dark-mode .service-card, .dark-mode .card, .dark-mode .doctor-card, .dark-mode aside.card {
+  background: rgba(15, 23, 42, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ============================================================
+   5. حقول الإدخال والقوائم المنسدلة الزجاجية
+   ============================================================ */
+.form-input, .form-textarea, .custom-select-trigger {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+}
+
+.dark-mode .form-input, .dark-mode .form-textarea, .dark-mode .custom-select-trigger, .dark-mode .custom-select-listbox {
+  background: rgba(15, 23, 42, 0.65) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+
+#doctor-select-container,
+#service-select-container,
+.custom-select {
+  position: relative;
+  z-index: 60;
+}
+
+#doctor-select-container > div:last-child,
+#service-select-container > div:last-child,
+#doctor-select-container [role="listbox"],
+#service-select-container [role="listbox"],
+.custom-select-listbox,
+.custom-select-menu {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14) !important;
+  border-radius: 12px !important;
+  z-index: 9999 !important;
+}
+
+#doctor-select-container [role="listbox"] *,
+#service-select-container [role="listbox"] *,
+.custom-select-listbox *,
+.custom-select-menu *,
+.custom-select-option {
+  background-color: transparent !important;
+  color: #0f172a !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#doctor-select-container [role="listbox"] > *:hover,
+#service-select-container [role="listbox"] > *:hover,
+.custom-select-option:hover {
+  background: rgba(13, 148, 136, 0.16) !important;
+  color: #0d9488 !important;
+}
+
+.dark-mode #doctor-select-container > div:last-child,
+.dark-mode #service-select-container > div:last-child,
+.dark-mode #doctor-select-container [role="listbox"],
+.dark-mode #service-select-container [role="listbox"],
+.dark-mode .custom-select-listbox,
+.dark-mode .custom-select-menu {
+  background: rgba(15, 23, 42, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark-mode #doctor-select-container [role="listbox"] *,
+.dark-mode #service-select-container [role="listbox"] *,
+.dark-mode .custom-select-listbox *,
+.dark-mode .custom-select-menu *,
+.dark-mode .custom-select-option {
+  color: #f8fafc !important;
+}
+
+.dark-mode #doctor-select-container [role="listbox"] > *:hover,
+.dark-mode #service-select-container [role="listbox"] > *:hover,
+.dark-mode .custom-select-option:hover {
+  background: rgba(45, 212, 191, 0.22) !important;
+  color: #5eead4 !important;
+}
+
+/* ============================================================
+   6. الإحصائيات وشارة العنوان العلوي
+   ============================================================ */
+#dynamic-hero-metrics > div, .hero-metrics > div {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 0 !important;
+}
+
+.metric-value {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: #0d9488 !important;
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9);
+}
+
+.dark-mode .metric-value {
+  color: #2dd4bf !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+
+[data-setting="hero_eyebrow"] {
+  background: rgba(13, 148, 136, 0.12);
+  backdrop-filter: blur(8px);
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  display: inline-block;
+}
+
+.dark-mode [data-setting="hero_eyebrow"] {
+  background: rgba(45, 212, 191, 0.15);
+  color: #5eead4 !important;
+  border-color: rgba(45, 212, 191, 0.3);
+}
+
+/* ============================================================
+   7. مسرح المحطات المتراكبة (Stacking Cards Curtain) ومؤشر التنقل
+   ============================================================ */
+.scroll-slide-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-slide-right.is-revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#cinematic-scroll-track {
+  position: relative;
+  height: auto;
+}
+
+#cinematic-viewport {
+  position: relative;
+  height: auto;
+  width: 100%;
+  overflow: visible;
+}
+
+.cinematic-slide {
+  position: sticky;
+  top: 70px;
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  padding: 2.5rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(248, 250, 252, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -16px 40px rgba(15, 23, 42, 0.08);
+  transform-origin: center top;
+  will-change: transform, opacity;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.cinematic-slide[data-stage="0"] {
+  border-top: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.dark-mode .cinematic-slide:not([data-stage="0"]) {
+  background: rgba(15, 23, 42, 0.52);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.cinematic-slide[data-stage="0"] { z-index: 1; }
+.cinematic-slide[data-stage="1"] { z-index: 2; }
+.cinematic-slide[data-stage="2"] { z-index: 3; }
+.cinematic-slide[data-stage="3"] { z-index: 4; }
+
+.stage-dots {
+  position: fixed;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+html[dir="ltr"] .stage-dots {
+  left: auto;
+  right: 1.25rem;
+}
+
+.stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(13, 148, 136, 0.3);
+  border: 1px solid rgba(13, 148, 136, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stage-dot.active {
+  height: 28px;
+  background: #0d9488;
+}
+
+@media (max-width: 768px) {
+  .cinematic-slide {
+    position: relative;
+    top: 0;
+    min-height: auto;
+    border-radius: 0;
+  }
+  .stage-dots {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-slide-right {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .cinematic-slide,
+  .service-card,
+  .card,
+  .doctor-card {
+    transition: none;
+  }
+}

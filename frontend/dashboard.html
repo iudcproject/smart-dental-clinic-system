@@ -8,412 +8,7 @@
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/animations.css">
   <link rel="stylesheet" href="/css/components.css">
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: inherit;
-      background-color: var(--surface-canvas, #f8fafc);
-      direction: rtl;
-      color: var(--text-primary, #0f172a);
-    }
-
-    /* خلفية لوحة التحكم بتدرج لوني ناعم يبرز شفافية الزجاج */
-    body, .dashboard-layout {
-      background: radial-gradient(circle at 15% 15%, rgba(13, 148, 136, 0.14), transparent 45%),
-                  radial-gradient(circle at 85% 80%, rgba(56, 189, 248, 0.14), transparent 45%),
-                  linear-gradient(135deg, #f0fdfa 0%, #f8fafc 50%, #eff6ff 100%) !important;
-      background-attachment: fixed !important;
-      min-height: 100vh;
-      width: 100%;
-    }
-
-    /* الشريط الجانبي والهيدر بتأثير زجاجي مصنفر */
-    .dash-sidebar {
-      width: 260px;
-      background: rgba(255, 255, 255, 0.62) !important;
-      backdrop-filter: blur(20px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-      border-left: 1px solid rgba(255, 255, 255, 0.75) !important;
-      box-shadow: -4px 0 24px rgba(15, 23, 42, 0.04);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      right: 0;
-      z-index: 20;
-      height: 100vh;
-    }
-
-    .dash-brand {
-      height: 70px;
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-weight: 700;
-      font-size: 1.1rem;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-      color: var(--text-primary, #0f172a);
-    }
-
-    .dash-nav {
-      flex: 1;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      overflow-y: auto;
-    }
-
-    .dash-nav-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      width: 100%;
-      min-height: 44px;
-      padding-inline: 0.85rem;
-      border-radius: 12px;
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--text-secondary, #475569);
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: start;
-      transition: all 0.25s ease;
-    }
-
-    .dash-nav-btn:hover {
-      background: rgba(255, 255, 255, 0.65);
-      color: #0d9488;
-      transform: translateX(-3px);
-    }
-    html[dir="ltr"] .dash-nav-btn:hover {
-      transform: translateX(3px);
-    }
-
-    .dash-nav-btn.active {
-      background: rgba(13, 148, 136, 0.14);
-      backdrop-filter: blur(8px);
-      color: #0d9488;
-      border-color: rgba(13, 148, 136, 0.35);
-      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.1);
-    }
-
-    .dash-main {
-      margin-right: 260px;
-      width: calc(100% - 260px);
-      display: block;
-      min-height: 100vh;
-    }
-
-    .dash-header {
-      height: 70px;
-      background: rgba(255, 255, 255, 0.62) !important;
-      backdrop-filter: blur(20px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.75) !important;
-      padding-inline: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 15;
-      width: 100%;
-    }
-
-    /* التوسيط الشامل للمحتوى في منتصف المساحة المرئية */
-    .dash-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-      max-width: 1120px;
-      width: 92%;
-      margin: 0 auto;
-    }
-
-    .tab-pane {
-      display: none;
-      width: 100%;
-    }
-    .tab-pane.active {
-      display: block;
-    }
-
-    .tab-pane > h2,
-    .tab-pane > h3,
-    .tab-pane > p,
-    .dash-content h2,
-    .dash-content h3,
-    .dash-content p {
-      text-align: center;
-      width: 100%;
-    }
-
-    .tab-pane > div:first-child:not(.stats-grid):not(.card):not(.table-container) {
-      display: flex !important;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      text-align: center;
-      margin-bottom: 1.5rem !important;
-    }
-
-    /* البطاقات الإحصائية والبطاقات العامة بتصميم زجاجي شفاف */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
-      width: 100%;
-    }
-
-    .card, .stat-card {
-      background: rgba(255, 255, 255, 0.55) !important;
-      backdrop-filter: blur(18px) saturate(170%) !important;
-      -webkit-backdrop-filter: blur(18px) saturate(170%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.8) !important;
-      border-radius: 18px !important;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06) !important;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .stat-card {
-      padding: 1.35rem;
-      text-align: center;
-    }
-    .stat-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 14px 34px rgba(13, 148, 136, 0.12) !important;
-    }
-
-    .tab-pane > .card {
-      margin-inline: auto !important;
-      width: 100%;
-    }
-
-    /* تنسيق الليبلز (Labels) والحقول لتكون مرتبة وزجاجية */
-    .form-group {
-      margin-bottom: 1.15rem;
-      text-align: start;
-    }
-
-    .form-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.86rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 0.45rem;
-      letter-spacing: 0.01em;
-    }
-
-    .form-input, .form-textarea, select.form-input {
-      background: rgba(255, 255, 255, 0.72) !important;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(148, 163, 184, 0.35) !important;
-      border-radius: 10px !important;
-      padding: 0.65rem 0.9rem;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    }
-
-    .form-input:focus, .form-textarea:focus {
-      background: rgba(255, 255, 255, 0.92) !important;
-      border-color: #0d9488 !important;
-      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.16) !important;
-      outline: none;
-    }
-
-    /* الجداول الزجاجية الشفافة المرتبة في منتصف الصفحة */
-    .table-container {
-      width: 100%;
-      max-width: 1040px;
-      margin: 1rem auto !important;
-      overflow-x: auto;
-      background: rgba(255, 255, 255, 0.52) !important;
-      backdrop-filter: blur(18px) saturate(170%) !important;
-      -webkit-backdrop-filter: blur(18px) saturate(170%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.8) !important;
-      border-radius: 18px !important;
-      box-shadow: 0 10px 32px rgba(15, 23, 42, 0.06) !important;
-    }
-
-    .data-table {
-      width: 100%;
-      margin: 0 auto;
-      border-collapse: separate;
-      border-spacing: 0;
-      text-align: start;
-      font-size: 0.9rem;
-    }
-
-    .data-table th {
-      background: rgba(13, 148, 136, 0.1) !important;
-      color: #0f172a !important;
-      font-weight: 700;
-      font-size: 0.84rem;
-      padding: 1rem 1.2rem;
-      border-bottom: 1px solid rgba(13, 148, 136, 0.2) !important;
-      white-space: nowrap;
-    }
-
-    .data-table td {
-      padding: 0.95rem 1.2rem;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
-      vertical-align: middle;
-      background: transparent !important;
-    }
-
-    .data-table tbody tr {
-      transition: background-color 0.2s ease;
-    }
-
-    .data-table tbody tr:hover {
-      background: rgba(255, 255, 255, 0.65) !important;
-    }
-
-    .data-table tbody tr:last-child td {
-      border-bottom: none !important;
-    }
-
-    /* النوافذ المنبثقة (Modals) بتصميم زجاجي مصنفر */
-    div[id^="modal-"].card {
-      background: rgba(255, 255, 255, 0.86) !important;
-      backdrop-filter: blur(24px) saturate(190%) !important;
-      -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-      border: 1px solid rgba(255, 255, 255, 0.95) !important;
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
-      z-index: 200 !important;
-    }
-
-    @media (max-width: 900px) {
-      .dash-sidebar { display: none; }
-      .dash-main { margin-right: 0; width: 100%; }
-    }
-
-    html[dir="ltr"] .dash-sidebar { right: auto; left: 0; border-left: none; border-right: 1px solid rgba(255, 255, 255, 0.75) !important; }
-    html[dir="ltr"] .dash-main { margin-right: 0; margin-left: 260px; }
-    @media (max-width: 900px) { html[dir="ltr"] .dash-main { margin-left: 0; } }
-
-    /* ============================================================
-       الوضع الليلي الزجاجي الداكن (Dark Glassmorphism)
-       ============================================================ */
-    .dark-mode {
-      --surface-canvas: #090d16 !important;
-      --surface-elevated: rgba(15, 23, 42, 0.65) !important;
-      --surface-subtle: rgba(30, 41, 59, 0.55) !important;
-      --text-primary: #f8fafc !important;
-      --text-secondary: #cbd5e1 !important;
-      --text-muted: #94a3b8 !important;
-      --border-subtle: rgba(255, 255, 255, 0.12) !important;
-    }
-
-    .dark-mode body, .dark-mode .dashboard-layout {
-      background: radial-gradient(circle at 15% 15%, rgba(13, 148, 136, 0.22), transparent 45%),
-                  radial-gradient(circle at 85% 80%, rgba(56, 189, 248, 0.16), transparent 45%),
-                  linear-gradient(135deg, #070b14 0%, #0f172a 55%, #091322 100%) !important;
-      color: #f8fafc !important;
-    }
-
-    .dark-mode .dash-sidebar,
-    .dark-mode .dash-header {
-      background: rgba(15, 23, 42, 0.68) !important;
-      border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .dark-mode .dash-nav-btn:hover {
-      background: rgba(30, 41, 59, 0.7);
-      color: #2dd4bf;
-    }
-
-    .dark-mode .dash-nav-btn.active {
-      background: rgba(45, 212, 191, 0.16);
-      color: #2dd4bf;
-      border-color: rgba(45, 212, 191, 0.35);
-    }
-
-    .dark-mode .card,
-    .dark-mode .stat-card,
-    .dark-mode .table-container {
-      background: rgba(15, 23, 42, 0.56) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.4) !important;
-      color: #f8fafc !important;
-    }
-
-    .dark-mode div[id^="modal-"].card {
-      background: rgba(15, 23, 42, 0.88) !important;
-      border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    }
-
-    .dark-mode .form-label {
-      color: #e2e8f0 !important;
-    }
-
-    .dark-mode .form-input,
-    .dark-mode .form-textarea,
-    .dark-mode select.form-input {
-      background: rgba(15, 23, 42, 0.65) !important;
-      color: #f8fafc !important;
-      border: 1px solid rgba(255, 255, 255, 0.16) !important;
-    }
-
-    .dark-mode .form-input:focus,
-    .dark-mode .form-textarea:focus {
-      border-color: #2dd4bf !important;
-      box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.2) !important;
-    }
-
-    .dark-mode .data-table th {
-      background: rgba(45, 212, 191, 0.12) !important;
-      color: #f8fafc !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-    }
-
-    .dark-mode .data-table td {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-      color: #e2e8f0 !important;
-    }
-
-    .dark-mode .data-table tbody tr:hover {
-      background: rgba(30, 41, 59, 0.65) !important;
-    }
-
-    /* تفتيح نصوص الشارات الزجاجية في الوضع الليلي */
-    .dark-mode .data-table td span[style*="rgba(16, 185, 129"] { color: #34d399 !important; }
-    .dark-mode .data-table td span[style*="rgba(239, 68, 68"] { color: #f87171 !important; }
-    .dark-mode .data-table td span[style*="rgba(245, 158, 11"] { color: #fbbf24 !important; }
-
-    /* إبقاء المساعد الذكي العائم فوق القائمة الجانبية دائماً */
-    body > div:not(.dashboard-layout):not([id^="modal-"]),
-    body > aside:not(.dash-sidebar),
-    body > button {
-      z-index: 9999 !important;
-    }
-    /* أي عنصر عائم (مثل المساعد الذكي) يُضاف داخل body يكون فوق القائمة الجانبية دائماً */
-    body > div:not(.dashboard-layout):not([id^="modal-"]),
-    body > aside:not(.dash-sidebar),
-    body > button {
-      z-index: 9999 !important;
-    }
-
-    /* تفتيح نصوص الشارات الزجاجية في الوضع الليلي */
-    .dark-mode .data-table td span[style*="rgba(16, 185, 129"] { color: #34d399 !important; }
-    .dark-mode .data-table td span[style*="rgba(239, 68, 68"] { color: #f87171 !important; }
-    .dark-mode .data-table td span[style*="rgba(245, 158, 11"] { color: #fbbf24 !important; }
-
-  </style>
+  <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
 
@@ -421,14 +16,10 @@
     <!-- Sidebar Navigation -->
     <aside class="dash-sidebar">
       <div class="dash-brand">
-        <span style="width: 2rem; height: 2rem; border-radius: var(--radius-sm); background: var(--action-primary-bg); color: #fff; display: inline-flex; align-items: center; justify-content: center;">
-          🦷
-        </span>
+        <span style="width: 2rem; height: 2rem; border-radius: var(--radius-sm); background: var(--action-primary-bg); color: #fff; display: inline-flex; align-items: center; justify-content: center;">🦷</span>
         <span id="brand-clinic-name" data-i18n="clinic_name">عيادة الابتسامة</span>
       </div>
-      <nav class="dash-nav" id="dash-nav-menu">
-        <!-- Dynamically populated based on role -->
-      </nav>
+      <nav class="dash-nav" id="dash-nav-menu"></nav>
       <div style="padding: var(--space-4); border-top: 1px solid var(--border-subtle);">
         <button type="button" id="logout-btn" class="dash-nav-btn" style="color: var(--status-error-text);">
           <span>🚪</span>
@@ -445,23 +36,18 @@
           <span id="user-role-badge" style="font-size: var(--text-xs); color: var(--text-muted);">جاري التحميل...</span>
         </div>
         <div style="display: flex; align-items: center; gap: var(--space-4);">
-          
           <button type="button" id="theme-toggle-btn" onclick="toggleDarkMode()" class="btn btn-secondary btn-sm">🌙</button>
           <button type="button" id="lang-toggle-btn" onclick="toggleLanguage()" class="btn btn-secondary btn-sm">EN</button>
 
-          <!-- أيقونة الإشعارات -->
           <div style="position: relative; cursor: pointer;" id="notifications-bell">
             <span style="font-size: 1.25rem;">🔔</span>
             <span id="notif-badge" style="position: absolute; top: -5px; right: -8px; background: #ef4444; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 50%; display: none;">0</span>
-            
-            <div id="notifications-dropdown" class="card" style="position: absolute; left: 0; top: 2rem; width: 300px; max-height: 350px; overflow-y: auto; display: none; z-index: 200; padding: 0.75rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+            <div id="notifications-dropdown" class="card" style="position: absolute; left: 0; top: 2rem; width: 300px; max-height: 350px; overflow-y: auto; display: none; z-index: 200; padding: 0.75rem;">
               <div style="font-weight: 700; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px; display: flex; justify-content: space-between;">
                 <span>الإشعارات</span>
                 <span style="font-size: 11px; color: var(--text-brand); cursor: pointer;" onclick="markAllNotificationsRead()">تحديد الكل مقروء</span>
               </div>
-              <div id="notifications-list" style="font-size: 0.85rem; color: var(--text-secondary);">
-                جاري تحميل الإشعارات...
-              </div>
+              <div id="notifications-list" style="font-size: 0.85rem; color: var(--text-secondary);">جاري تحميل الإشعارات...</div>
             </div>
           </div>
 
@@ -471,28 +57,14 @@
       </header>
 
       <main class="dash-content">
-
-        <!-- TAB 1: OVERVIEW & STATS -->
+        <!-- TAB 1: OVERVIEW -->
         <section id="tab-overview" class="tab-pane active animate-enter">
           <div class="stats-grid" id="admin-stats-grid" style="display: none;">
-            <div class="stat-card">
-              <span style="color: var(--text-muted); font-size: var(--text-xs);">عدد الأطباء</span>
-              <h2 id="stat-doctors" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
-            </div>
-            <div class="stat-card">
-              <span style="color: var(--text-muted); font-size: var(--text-xs);">عدد المرضى</span>
-              <h2 id="stat-patients" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
-            </div>
-            <div class="stat-card">
-              <span style="color: var(--text-muted); font-size: var(--text-xs);">إجمالي المواعيد</span>
-              <h2 id="stat-appts" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
-            </div>
-            <div class="stat-card">
-              <span style="color: var(--text-muted); font-size: var(--text-xs);">الخدمات العلاجية</span>
-              <h2 id="stat-services" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
-            </div>
+            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">عدد الأطباء</span><h2 id="stat-doctors" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2></div>
+            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">عدد المرضى</span><h2 id="stat-patients" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2></div>
+            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">إجمالي المواعيد</span><h2 id="stat-appts" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2></div>
+            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">الخدمات العلاجية</span><h2 id="stat-services" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2></div>
           </div>
-
           <div class="card">
             <h3 style="margin: 0 0 var(--space-3); font-size: var(--text-lg);">مرحباً بك في لوحة التحكم الإدارية</h3>
             <p style="color: var(--text-secondary); margin: 0;">اختر من القائمة الجانبية لإدارة المواعيد، السجلات الطبية، الأطباء، أو إعدادات العيادة بكل سهولة.</p>
@@ -507,19 +79,8 @@
           </div>
           <div class="table-container">
             <table class="data-table">
-              <thead>
-                <tr>
-                  <th>المريض</th>
-                  <th>الطبيب المعالج</th>
-                  <th>الخدمة</th>
-                  <th>التاريخ والوقت</th>
-                  <th>الحالة</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="appointments-tbody">
-                <tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل المواعيد...</td></tr>
-              </tbody>
+              <thead><tr><th>المريض</th><th>الطبيب المعالج</th><th>الخدمة</th><th>التاريخ والوقت</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+              <tbody id="appointments-tbody"><tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل المواعيد...</td></tr></tbody>
             </table>
           </div>
         </section>
@@ -532,24 +93,13 @@
           </div>
           <div class="table-container">
             <table class="data-table">
-              <thead>
-                <tr>
-                  <th>المريض</th>
-                  <th>الطبيب المعالج</th>
-                  <th>رقم السن</th>
-                  <th>التشخيص والعلاج</th>
-                  <th>التاريخ</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="dental-records-tbody">
-                <tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل السجلات الطبية...</td></tr>
-              </tbody>
+              <thead><tr><th>المريض</th><th>الطبيب المعالج</th><th>رقم السن</th><th>التشخيص والعلاج</th><th>التاريخ</th><th>الإجراءات</th></tr></thead>
+              <tbody id="dental-records-tbody"><tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل السجلات الطبية...</td></tr></tbody>
             </table>
           </div>
         </section>
 
-        <!-- TAB 4: DOCTORS MANAGEMENT -->
+        <!-- TAB 4: DOCTORS -->
         <section id="tab-doctors" class="tab-pane animate-enter">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
             <h2 style="margin: 0; font-size: var(--text-xl);">إدارة أطباء العيادة</h2>
@@ -557,23 +107,13 @@
           </div>
           <div class="table-container">
             <table class="data-table">
-              <thead>
-                <tr>
-                  <th>اسم الطبيب</th>
-                  <th>التخصص</th>
-                  <th>البريد الإلكتروني</th>
-                  <th>الهاتف</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="doctors-tbody">
-                <tr><td colspan="5" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr>
-              </tbody>
+              <thead><tr><th>اسم الطبيب</th><th>التخصص</th><th>البريد الإلكتروني</th><th>الهاتف</th><th>الإجراءات</th></tr></thead>
+              <tbody id="doctors-tbody"><tr><td colspan="5" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr></tbody>
             </table>
           </div>
         </section>
 
-        <!-- TAB 5: SERVICES MANAGEMENT -->
+        <!-- TAB 5: SERVICES -->
         <section id="tab-services" class="tab-pane animate-enter">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
             <h2 style="margin: 0; font-size: var(--text-xl);">إدارة الخدمات العلاجية وأوقاتها</h2>
@@ -581,18 +121,8 @@
           </div>
           <div class="table-container">
             <table class="data-table">
-              <thead>
-                <tr>
-                  <th>اسم الخدمة</th>
-                  <th>الوصف</th>
-                  <th>السعر</th>
-                  <th>مدة الجلسة</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="services-tbody">
-                <tr><td colspan="5" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr>
-              </tbody>
+              <thead><tr><th>اسم الخدمة</th><th>الوصف</th><th>السعر</th><th>مدة الجلسة</th><th>الإجراءات</th></tr></thead>
+              <tbody id="services-tbody"><tr><td colspan="5" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr></tbody>
             </table>
           </div>
         </section>
@@ -602,263 +132,145 @@
           <h2 style="margin: 0 0 var(--space-4); font-size: var(--text-xl);">إعدادات ومعلومات الصفحة الرئيسية للعيادة</h2>
           <div class="card" style="max-width: 48rem;">
             <form id="clinic-settings-form">
-              
               <div class="form-group">
                 <label class="form-label">اسم العيادة</label>
                 <div style="display: flex; gap: 0.5rem;">
-                  <input type="text" id="set-clinic-name" class="form-input" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;" placeholder="جاري التحميل...">
+                  <input type="text" id="set-clinic-name" class="form-input" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;">
                   <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditField('set-clinic-name', this)">تعديل</button>
                 </div>
               </div>
-
               <div class="form-group">
                 <label class="form-label">عنوان العيادة</label>
                 <div style="display: flex; gap: 0.5rem;">
-                  <input type="text" id="set-clinic-address" class="form-input" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;" placeholder="جاري التحميل...">
+                  <input type="text" id="set-clinic-address" class="form-input" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;">
                   <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditField('set-clinic-address', this)">تعديل</button>
                 </div>
               </div>
-
               <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: var(--space-4) 0;">
               <h3 style="font-size: var(--text-base); margin-bottom: var(--space-3);">جدول أيام وأوقات العمل الرسمية</h3>
-              
               <div style="background: var(--surface-subtle); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                 <label class="form-label" style="font-weight: 700; color: var(--text-brand);">أيام العمل الأساسية</label>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
-                  <div>
-                    <label style="font-size: 12px;">من يوم:</label>
-                    <select id="set-day-from" class="form-input">
-                      <option value="السبت">السبت</option>
-                      <option value="الأحد">الأحد</option>
-                      <option value="الإثنين">الإثنين</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style="font-size: 12px;">إلى يوم:</label>
-                    <select id="set-day-to" class="form-input">
-                      <option value="الخميس" selected>الخميس</option>
-                      <option value="الجمعة">الجمعة</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style="font-size: 12px;">الساعات:</label>
-                    <div style="display: flex; gap: 4px;">
-                      <input type="time" id="set-work-start" class="form-input" required>
-                      <input type="time" id="set-work-end" class="form-input" required>
-                    </div>
-                  </div>
+                  <div><label style="font-size: 12px;">من يوم:</label><select id="set-day-from" class="form-input"><option value="السبت">السبت</option><option value="الأحد">الأحد</option><option value="الإثنين">الإثنين</option></select></div>
+                  <div><label style="font-size: 12px;">إلى يوم:</label><select id="set-day-to" class="form-input"><option value="الخميس" selected>الخميس</option><option value="الجمعة">الجمعة</option></select></div>
+                  <div><label style="font-size: 12px;">الساعات:</label><div style="display: flex; gap: 4px;"><input type="time" id="set-work-start" class="form-input" required><input type="time" id="set-work-end" class="form-input" required></div></div>
                 </div>
               </div>
-
               <div style="background: var(--surface-subtle); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
                 <label class="form-label" style="font-weight: 700; color: var(--text-brand);">يوم مخصص (مثل يوم الجمعة)</label>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem; align-items: center;">
-                  <div>
-                    <label style="font-size: 12px;">اليوم:</label>
-                    <input type="text" id="set-special-day" class="form-input" value="الجمعة">
-                  </div>
-                  <div>
-                    <label style="font-size: 12px;">الحالة / الأوقات:</label>
-                    <select id="set-special-status" class="form-input" onchange="handleSpecialStatus(this.value)">
-                      <option value="closed">مغلق تماماً</option>
-                      <option value="custom">أوقات محددة...</option>
-                    </select>
-                  </div>
-                  <div id="special-hours-div" style="display: none;">
-                    <label style="font-size: 12px;">الساعات:</label>
-                    <div style="display: flex; gap: 4px;">
-                      <input type="time" id="set-special-start" class="form-input">
-                      <input type="time" id="set-special-end" class="form-input">
-                    </div>
-                  </div>
+                  <div><label style="font-size: 12px;">اليوم:</label><input type="text" id="set-special-day" class="form-input" value="الجمعة"></div>
+                  <div><label style="font-size: 12px;">الحالة / الأوقات:</label><select id="set-special-status" class="form-input" onchange="handleSpecialStatus(this.value)"><option value="closed">مغلق تماماً</option><option value="custom">أوقات محددة...</option></select></div>
+                  <div id="special-hours-div" style="display: none;"><label style="font-size: 12px;">الساعات:</label><div style="display: flex; gap: 4px;"><input type="time" id="set-special-start" class="form-input"><input type="time" id="set-special-end" class="form-input"></div></div>
                 </div>
               </div>
-
               <div class="form-group">
                 <label class="form-label">رقم الهاتف</label>
                 <div style="display: flex; gap: 0.5rem;" dir="ltr">
                   <select id="set-phone-prefix" class="form-input" style="width: 140px;">
-                    <option value="+962">+962 (الأردن)</option>
-                    <option value="+966">+966 (السعودية)</option>
-                    <option value="+963">+963 (سوريا)</option>
-                    <option value="+970">+970 (فلسطين)</option>
-                    <option value="+971">+971 (الإمارات)</option>
-                    <option value="+20">+20 (مصر)</option>
+                    <option value="+962">+962 (الأردن)</option><option value="+966">+966 (السعودية)</option><option value="+963">+963 (سوريا)</option><option value="+970">+970 (فلسطين)</option><option value="+971">+971 (الإمارات)</option><option value="+20">+20 (مصر)</option>
                   </select>
                   <input type="tel" id="set-clinic-phone" class="form-input" placeholder="7xxxxxxxx" required style="text-align: right;">
                 </div>
-                <small style="color: var(--text-muted); display: block; margin-top: 4px;">أدخل الرقم بدون الصفر الأول</small>
               </div>
-
               <div class="form-group">
                 <label class="form-label">البريد الإلكتروني</label>
                 <div style="display: flex; gap: 0.5rem;">
-                  <input type="email" id="set-clinic-email" class="form-input" placeholder="example@domain.com" dir="ltr" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;">
+                  <input type="email" id="set-clinic-email" class="form-input" dir="ltr" readonly style="background-color: var(--surface-subtle); cursor: not-allowed;">
                   <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditField('set-clinic-email', this)">تعديل</button>
                 </div>
               </div>
-
               <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: var(--space-4) 0;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3);">
                 <h3 style="font-size: var(--text-base); margin: 0;">إحصائيات ومميزات العيادة (أعلى الصفحة الرئيسية)</h3>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="addStatItemRow()">+ إضافة ميزة جديدة</button>
               </div>
-
-              <div id="dynamic-stats-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
-                <!-- سيتم بناء حقول المميزات هنا ديناميكياً -->
-              </div>
-
+              <div id="dynamic-stats-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;"></div>
               <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: var(--space-4) 0;">
-              <!-- قسم تخصيص بطاقة خطوات الزيارة في العيادة -->
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3);">
                 <h3 style="font-size: var(--text-base); margin: 0;">تخصيص بطاقة: كيف تتم زيارتك في العيادة؟</h3>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="addVisitStepRow()">+ إضافة خطوة</button>
               </div>
-
               <div class="form-group">
                 <label class="form-label" for="set-visit-steps-title">عنوان البطاقة الرئيسي</label>
                 <input type="text" id="set-visit-steps-title" class="form-input" placeholder="مثال: كيف تتم زيارتك في العيادة؟">
               </div>
-
-              <div id="admin-visit-steps-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
-                <!-- يتم بناء حقول خطوات الزيارة هنا ديناميكياً -->
-              </div>
-
+              <div id="admin-visit-steps-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;"></div>
               <div class="form-group">
                 <label class="form-label">الحد الأدنى لساعات الحجز المسبق</label>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                   <select id="set-min-hours-select" class="form-input" onchange="handleMinHoursChange(this.value)">
-                    <option value="1">ساعة واحدة (1)</option>
-                    <option value="2">ساعتان (2)</option>
-                    <option value="3">3 ساعات (افتراضي)</option>
-                    <option value="6">6 ساعات</option>
-                    <option value="12">12 ساعة</option>
-                    <option value="24">24 ساعة (يوم كامل)</option>
-                    <option value="custom">⚙️ تخصيص (إدخال يدوي)...</option>
+                    <option value="1">ساعة واحدة (1)</option><option value="2">ساعتان (2)</option><option value="3">3 ساعات (افتراضي)</option><option value="6">6 ساعات</option><option value="12">12 ساعة</option><option value="24">24 ساعة (يوم كامل)</option><option value="custom">⚙️ تخصيص (إدخال يدوي)...</option>
                   </select>
                   <input type="number" id="set-min-hours-custom" class="form-input" min="1" max="168" placeholder="عدد الساعات" style="display: none; width: 150px;" dir="ltr">
                 </div>
               </div>
-              
               <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: var(--space-4) 0;">
               <div class="form-group" style="background: var(--surface-subtle); padding: 1rem; border-radius: 8px;">
                 <label class="form-label" style="font-weight: 700; color: var(--text-brand);">🎬 تغيير الفيديو الخلفي للصفحة الرئيسية</label>
                 <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 0.75rem; text-align: start; line-height: 1.6;">
-                  <strong>شروط أساسية: </strong> يجب أن يكون اسم الملف المختار <strong>"dental-bg.mp4"</strong> تماماً وبصيغة MP4، وألا يتعدى حجم الفيديو <strong>4 ميجابايت</strong> ومدته <strong>15 ثانية</strong> ليشتغل بسلاسة في الصفحة الرئيسية
+                  <strong>شروط أساسية:</strong> يجب أن يكون اسم الملف المختار <strong>dental-bg.mp4</strong> تماماً وبصيغة MP4، وألا يتعدى حجم الفيديو <strong>4 ميجابايت</strong> ومدته <strong>15 ثانية</strong> ليشتغل بسلاسة في الصفحة الرئيسية.
                 </p>
                 <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
                   <input type="file" id="bg-video-file-input" accept="video/mp4" class="form-input" style="max-width: 320px;">
                   <button type="button" id="upload-bg-video-btn" class="btn btn-secondary btn-sm">رفع وتحديث الفيديو</button>
                 </div>
               </div>
-
               <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">حفظ وتحديث الإعدادات المعدلة</button>
             </form>
           </div>
         </section>
 
-        <!-- TAB 7: PROFILE SETTINGS -->
+        <!-- TAB 7: PROFILE -->
         <section id="tab-profile" class="tab-pane animate-enter">
           <h2 style="margin: 0 0 var(--space-4); font-size: var(--text-xl);">الملف الشخصي وكلمة المرور</h2>
           <div class="card" style="max-width: 40rem;">
             <form id="profile-form">
-              <div class="form-group">
-                <label class="form-label">الاسم الكامل</label>
-                <input type="text" id="prof-name" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">البريد الإلكتروني</label>
-                <input type="email" id="prof-email" class="form-input" dir="ltr" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">رقم الهاتف</label>
-                <input type="tel" id="prof-phone" class="form-input" dir="ltr">
-              </div>
+              <div class="form-group"><label class="form-label">الاسم الكامل</label><input type="text" id="prof-name" class="form-input" required></div>
+              <div class="form-group"><label class="form-label">البريد الإلكتروني</label><input type="email" id="prof-email" class="form-input" dir="ltr" required></div>
+              <div class="form-group"><label class="form-label">رقم الهاتف</label><input type="tel" id="prof-phone" class="form-input" dir="ltr"></div>
               <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: var(--space-5) 0;">
               <h3 style="font-size: var(--text-base); margin-bottom: var(--space-3);">تغيير كلمة المرور (اختياري)</h3>
-              <div class="form-group">
-                <label class="form-label">كلمة المرور الحالية</label>
-                <input type="password" id="prof-curr-pass" class="form-input privacy-secret">
-              </div>
-              <div class="form-group">
-                <label class="form-label">كلمة المرور الجديدة</label>
-                <input type="password" id="prof-new-pass" class="form-input privacy-secret" placeholder="6 أحرف على الأقل">
-              </div>
+              <div class="form-group"><label class="form-label">كلمة المرور الحالية</label><input type="password" id="prof-curr-pass" class="form-input privacy-secret"></div>
+              <div class="form-group"><label class="form-label">كلمة المرور الجديدة</label><input type="password" id="prof-new-pass" class="form-input privacy-secret" placeholder="6 أحرف على الأقل"></div>
               <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
             </form>
           </div>
         </section>
 
-        <!-- TAB 8: FINANCE & REPORTS -->
+        <!-- TAB 8: FINANCE -->
         <section id="tab-finance" class="tab-pane animate-enter">
           <h2 style="margin: 0 0 var(--space-4); font-size: var(--text-xl);">التقارير المالية وإدارة الإيرادات</h2>
-
-          <!-- شريط الفلترة والتصدير -->
           <div class="card" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: center;">
-            <div>
-              <label class="form-label" style="font-size: 12px;">من تاريخ:</label>
-              <input type="date" id="fin-date-from" class="form-input">
-            </div>
-            <div>
-              <label class="form-label" style="font-size: 12px;">إلى تاريخ:</label>
-              <input type="date" id="fin-date-to" class="form-input">
-            </div>
+            <div><label class="form-label" style="font-size: 12px;">من تاريخ:</label><input type="date" id="fin-date-from" class="form-input"></div>
+            <div><label class="form-label" style="font-size: 12px;">إلى تاريخ:</label><input type="date" id="fin-date-to" class="form-input"></div>
             <button type="button" class="btn btn-primary btn-sm" onclick="loadFinanceReport()">تصفية التقرير</button>
             <button type="button" class="btn btn-secondary btn-sm" onclick="resetFinanceFilter()">عرض الكل</button>
             <button type="button" class="btn btn-secondary btn-sm" onclick="exportFinanceCSV()">📥 تصدير Excel (CSV)</button>
           </div>
-
           <div class="stats-grid" style="width: 100%;">
-            <div class="stat-card">
-              <span style="color: var(--text-muted); font-size: var(--text-xs);">إجمالي الإيرادات المحصلة (المواعيد المؤكدة/المكتملة)</span>
-              <h2 id="finance-total-revenue" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl); color: var(--text-brand);">0 دينار</h2>
-            </div>
-            <div class="stat-card">
-              <span style="color: var(--text-muted); font-size: var(--text-xs);">عدد الجلسات المحتسبة</span>
-              <h2 id="finance-paid-count" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
-            </div>
+            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">إجمالي الإيرادات المحصلة (المواعيد المؤكدة/المكتملة)</span><h2 id="finance-total-revenue" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl); color: var(--text-brand);">0 دينار</h2></div>
+            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">عدد الجلسات المحتسبة</span><h2 id="finance-paid-count" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2></div>
           </div>
-
           <div class="card" style="margin-top: 1.5rem;">
             <h3 style="font-size: var(--text-lg); margin-bottom: 1rem;">الإيرادات حسب الخدمات العلاجية</h3>
             <div class="table-container">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>اسم الخدمة</th>
-                    <th>عدد الحجوزات</th>
-                    <th>إجمالي الإيراد</th>
-                  </tr>
-                </thead>
-                <tbody id="finance-services-tbody">
-                  <tr><td colspan="3" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr>
-                </tbody>
+                <thead><tr><th>اسم الخدمة</th><th>عدد الحجوزات</th><th>إجمالي الإيراد</th></tr></thead>
+                <tbody id="finance-services-tbody"><tr><td colspan="3" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr></tbody>
               </table>
             </div>
           </div>
-
           <div class="card" style="margin-top: 1.5rem;">
             <h3 style="font-size: var(--text-lg); margin-bottom: 1rem;">سجل المعاملات والجلسات المالية التفصيلي</h3>
             <div class="table-container">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>التاريخ</th>
-                    <th>المريض</th>
-                    <th>الطبيب</th>
-                    <th>الخدمة</th>
-                    <th>الحالة</th>
-                    <th>المبلغ</th>
-                  </tr>
-                </thead>
-                <tbody id="finance-transactions-tbody">
-                  <tr><td colspan="6" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr>
-                </tbody>
+                <thead><tr><th>التاريخ</th><th>المريض</th><th>الطبيب</th><th>الخدمة</th><th>الحالة</th><th>المبلغ</th></tr></thead>
+                <tbody id="finance-transactions-tbody"><tr><td colspan="6" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr></tbody>
               </table>
             </div>
           </div>
         </section>
-
       </main>
     </div>
   </div>
@@ -879,31 +291,13 @@
     </form>
   </div>
 
-  <!-- نافذة حجز موعد جديد للمريض -->
   <div id="modal-book-appointment" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 36rem; height: fit-content; z-index: 100; display: none;">
     <h3 style="margin-top: 0;">حجز موعد جديد في العيادة</h3>
     <form id="book-appointment-form">
-      <div class="form-group">
-        <label class="form-label">اختر الطبيب المعالج</label>
-        <select id="book-doctor-id" class="form-input" required>
-          <option value="">جاري تحميل الأطباء...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">اختر الخدمة العلاجية</label>
-        <select id="book-service-id" class="form-input" required>
-          <option value="">جاري تحميل الخدمات...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">تاريخ الموعد</label>
-        <input type="date" id="book-date" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">وقت الحجز</label>
-        <input type="time" id="book-time" class="form-input" required>
-        <small style="color: var(--text-muted);">يرجى الحجز قبل بـ 3 ساعات على الأقل ضمن أوقات الدوام.</small>
-      </div>
+      <div class="form-group"><label class="form-label">اختر الطبيب المعالج</label><select id="book-doctor-id" class="form-input" required><option value="">جاري تحميل الأطباء...</option></select></div>
+      <div class="form-group"><label class="form-label">اختر الخدمة العلاجية</label><select id="book-service-id" class="form-input" required><option value="">جاري تحميل الخدمات...</option></select></div>
+      <div class="form-group"><label class="form-label">تاريخ الموعد</label><input type="date" id="book-date" class="form-input" required></div>
+      <div class="form-group"><label class="form-label">وقت الحجز</label><input type="time" id="book-time" class="form-input" required><small style="color: var(--text-muted);">يرجى الحجز قبل بـ 3 ساعات على الأقل ضمن أوقات الدوام.</small></div>
       <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
         <button type="button" class="btn btn-secondary" id="close-book-modal">إلغاء</button>
         <button type="submit" class="btn btn-primary">تأكيد حجز الموعد</button>
@@ -926,69 +320,34 @@
     </form>
   </div>
 
-  <!-- نافذة إضافة وتعديل السجل الطبي -->
   <div id="modal-dental" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 40rem; height: fit-content; z-index: 100; display: none;">
     <h3 id="dental-modal-title" style="margin-top: 0; display: flex; align-items: center; gap: 8px;"><span>🦷</span> تسجيل علاج ومعالجة سن جديد</h3>
     <form id="add-dental-form">
       <input type="hidden" id="edit-dental-id">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div class="form-group">
-          <label class="form-label">رقم معرف المريض (ID)</label>
-          <input type="number" id="dental-patient-id" class="form-input" placeholder="مثال: 3" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">رقم السن</label>
-          <input type="text" id="dental-tooth" class="form-input" placeholder="مثال: 11, 26, 38..." required>
-        </div>
+        <div class="form-group"><label class="form-label">رقم معرف المريض (ID)</label><input type="number" id="dental-patient-id" class="form-input" placeholder="مثال: 3" required></div>
+        <div class="form-group"><label class="form-label">رقم السن</label><input type="text" id="dental-tooth" class="form-input" placeholder="مثال: 11, 26, 38..." required></div>
       </div>
-
-      <div class="form-group">
-        <label class="form-label">التشخيص الطبي</label>
-        <input type="text" id="dental-diagnosis" class="form-input" placeholder="مثال: تسوس عميق، التهاب عصب..." required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">العلاج المنجز (الإجراء)</label>
-        <input type="text" id="dental-treatment" class="form-input" placeholder="مثال: حشو ضوئي، سحب عصب، تنظيف جير..." required>
-      </div>
-
+      <div class="form-group"><label class="form-label">التشخيص الطبي</label><input type="text" id="dental-diagnosis" class="form-input" required></div>
+      <div class="form-group"><label class="form-label">العلاج المنجز (الإجراء)</label><input type="text" id="dental-treatment" class="form-input" required></div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div class="form-group">
-          <label class="form-label">تكلفة الجلسة (دينار أردني)</label>
-          <input type="number" id="dental-cost" class="form-input" value="0" min="0" step="0.5" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">توليد الذكاء الاصطناعي للتعليمات</label>
-          <button type="button" class="btn btn-secondary btn-sm" id="generate-ai-care" style="width: 100%; margin-top: 2px;">✨ توليد التعليمات بالذكاء الاصطناعي</button>
-        </div>
+        <div class="form-group"><label class="form-label">تكلفة الجلسة (دينار أردني)</label><input type="number" id="dental-cost" class="form-input" value="0" min="0" step="0.5" required></div>
+        <div class="form-group"><label class="form-label">توليد الذكاء الاصطناعي للتعليمات</label><button type="button" class="btn btn-secondary btn-sm" id="generate-ai-care" style="width: 100%; margin-top: 2px;">✨ توليد التعليمات بالذكاء الاصطناعي</button></div>
       </div>
-
-      <div class="form-group">
-        <label class="form-label">تعليمات ما بعد العلاج والملاحظات</label>
-        <textarea id="dental-care" class="form-textarea" rows="2" placeholder="تعليمات العناية بالمنزل للمريض..."></textarea>
-      </div>
-
+      <div class="form-group"><label class="form-label">تعليمات ما بعد العلاج والملاحظات</label><textarea id="dental-care" class="form-textarea" rows="2"></textarea></div>
       <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
         <button type="button" class="btn btn-secondary" id="close-dental-modal">إلغاء</button>
         <button type="submit" class="btn btn-primary" id="dental-submit-btn">حفظ السجل الطبي</button>
       </div>
     </form>
   </div>
-  <!-- نافذة تحديد أو تخصيص الخدمة للموعد (للأدمن والطبيب) -->
+
   <div id="modal-assign-service" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 32rem; height: fit-content; z-index: 100; display: none;">
     <h3 style="margin-top: 0;">تحديد أو تخصيص خدمة الموعد</h3>
     <form id="assign-service-form">
       <input type="hidden" id="assign-appt-id">
-      <div class="form-group">
-        <label class="form-label">اختر من خدمات العيادة المعتمدة</label>
-        <select id="assign-service-select" class="form-input" onchange="toggleCustomServiceInput(this.value)">
-          <option value="">-- جاري تحميل الخدمات --</option>
-        </select>
-      </div>
-      <div class="form-group" id="custom-service-name-group" style="display: none;">
-        <label class="form-label">أو اكتب اسم خدمة مخصصة (Customize)</label>
-        <input type="text" id="assign-custom-service" class="form-input" placeholder="مثال: استشارة زراعة أسنان + صورة أشعة">
-      </div>
+      <div class="form-group"><label class="form-label">اختر من خدمات العيادة المعتمدة</label><select id="assign-service-select" class="form-input" onchange="toggleCustomServiceInput(this.value)"><option value="">-- جاري تحميل الخدمات --</option></select></div>
+      <div class="form-group" id="custom-service-name-group" style="display: none;"><label class="form-label">أو اكتب اسم خدمة مخصصة (Customize)</label><input type="text" id="assign-custom-service" class="form-input"></div>
       <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
         <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-assign-service').style.display='none'">إلغاء</button>
         <button type="submit" class="btn btn-primary">حفظ وتحديث الخدمة</button>
@@ -996,61 +355,24 @@
     </form>
   </div>
 
-  <!-- نافذة توثيق إتمام الزيارة والإجراء وعدد الزيارات وإنشاء السجل الطبي -->
   <div id="modal-complete-visit" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 38rem; height: fit-content; z-index: 100; display: none; max-height: 90vh; overflow-y: auto;">
     <h3 style="margin-top: 0; color: var(--text-brand);">🩺 توثيق الزيارة وإنشاء السجل الطبي</h3>
     <form id="complete-visit-form">
       <input type="hidden" id="cv-appt-id">
-
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; background: var(--surface-subtle); padding: 0.85rem; border-radius: 8px; margin-bottom: 1rem;">
-        <div>
-          <label class="form-label" style="font-size: 12px;">هل تمت الزيارة؟</label>
-          <select id="cv-visit-completed" class="form-input" onchange="toggleVisitRecordFields(this.value)">
-            <option value="1">نعم، تمت الزيارة</option>
-            <option value="0">لا، لم تتم بعد</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label" style="font-size: 12px;">هل تم عمل إجراء للمريض؟</label>
-          <select id="cv-procedure-done" class="form-input">
-            <option value="1">نعم، تم الإجراء</option>
-            <option value="0">لا (كشف فقط)</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label" style="font-size: 12px;">كم زيارة احتاج المريض؟</label>
-          <input type="number" id="cv-visits-count" class="form-input" min="1" max="50" value="1" required>
-        </div>
+        <div><label class="form-label" style="font-size: 12px;">هل تمت الزيارة؟</label><select id="cv-visit-completed" class="form-input" onchange="toggleVisitRecordFields(this.value)"><option value="1">نعم، تمت الزيارة</option><option value="0">لا، لم تتم بعد</option></select></div>
+        <div><label class="form-label" style="font-size: 12px;">هل تم عمل إجراء للمريض؟</label><select id="cv-procedure-done" class="form-input"><option value="1">نعم، تم الإجراء</option><option value="0">لا (كشف فقط)</option></select></div>
+        <div><label class="form-label" style="font-size: 12px;">كم زيارة احتاج المريض؟</label><input type="number" id="cv-visits-count" class="form-input" min="1" max="50" value="1" required></div>
       </div>
-
       <div id="cv-record-details-box">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <div class="form-group">
-            <label class="form-label">رقم السن المعالج</label>
-            <input type="text" id="cv-tooth" class="form-input" placeholder="مثال: 16 أو عام" value="عام" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">التكلفة الفعلية (دينار أردني)</label>
-            <input type="number" id="cv-cost" class="form-input" min="0" step="0.5" required>
-          </div>
+          <div class="form-group"><label class="form-label">رقم السن المعالج</label><input type="text" id="cv-tooth" class="form-input" value="عام" required></div>
+          <div class="form-group"><label class="form-label">التكلفة الفعلية (دينار أردني)</label><input type="number" id="cv-cost" class="form-input" min="0" step="0.5" required></div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">التشخيص الطبي</label>
-          <input type="text" id="cv-diagnosis" class="form-input" placeholder="تشخيص حالة المريض أثناء الزيارة" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">الإجراء / العلاج المنجز</label>
-          <input type="text" id="cv-treatment" class="form-input" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">ملاحظات وتعليمات ما بعد الزيارة</label>
-          <textarea id="cv-notes" class="form-textarea" rows="2" placeholder="تعليمات للمريض..."></textarea>
-        </div>
+        <div class="form-group"><label class="form-label">التشخيص الطبي</label><input type="text" id="cv-diagnosis" class="form-input" required></div>
+        <div class="form-group"><label class="form-label">الإجراء / العلاج المنجز</label><input type="text" id="cv-treatment" class="form-input" required></div>
+        <div class="form-group"><label class="form-label">ملاحظات وتعليمات ما بعد الزيارة</label><textarea id="cv-notes" class="form-textarea" rows="2"></textarea></div>
       </div>
-
       <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
         <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal-complete-visit').style.display='none'">إلغاء</button>
         <button type="submit" class="btn btn-primary">حفظ الزيارة وترحيل السجل والمالية</button>
@@ -1058,1356 +380,10 @@
     </form>
   </div>
 
+  <script src="/js/ui/core-controls.js"></script>
+  <script src="/js/ui/floating-ai.js"></script>
+  <script src="/js/ui/privacy-translator.js"></script>
   <script src="/js/ui-components.js"></script>
-  <script>
-    (function () {
-      let currentUser = null;
-
-      document.addEventListener('DOMContentLoaded', async () => {
-        await loadSidebarClinicName();
-        await checkAuth();
-        bindNavigation();
-        loadTabData('overview');
-        bindActions();
-      });
-
-      async function loadSidebarClinicName() {
-        try {
-          const res = await fetch('/api/settings');
-          if (!res.ok) return;
-          const data = await res.json();
-          if (data && data.clinic_name) {
-            window.savedClinicName = data.clinic_name;
-            const brandEl = document.getElementById('brand-clinic-name');
-            if (brandEl) brandEl.textContent = data.clinic_name;
-            document.title = `لوحة التحكم | ${data.clinic_name}`;
-          }
-        } catch (e) {}
-      }
-
-      async function loadProfileForm() {
-        try {
-          if (currentUser) {
-            document.getElementById('prof-name').value = currentUser.name || '';
-            document.getElementById('prof-email').value = currentUser.email || '';
-            document.getElementById('prof-phone').value = currentUser.phone || '';
-          }
-        } catch (e) {
-          console.error("Error loading profile:", e);
-        }
-      }
-
-      document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-          name: document.getElementById('prof-name').value,
-          email: document.getElementById('prof-email').value,
-          phone: document.getElementById('prof-phone').value,
-          current_password: document.getElementById('prof-curr-pass').value,
-          new_password: document.getElementById('prof-new-pass').value
-        };
-
-        try {
-          const res = await fetch('/api/profile', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر تحديث الملف الشخصي');
-
-          ClinicUI.showToast('تم تحديث الملف الشخصي بنجاح');
-          document.getElementById('prof-curr-pass').value = '';
-          document.getElementById('prof-new-pass').value = '';
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      });
-
-      async function checkAuth() {
-        try {
-          const res = await fetch('/api/auth/me');
-          if (!res.ok) { window.location.href = '/login.html'; return; }
-          const data = await res.json();
-          currentUser = data.user;
-
-          document.getElementById('user-avatar-name').textContent = currentUser.name;
-          const roleMap = { admin: 'مدير النظام (Admin)', doctor: 'طبيب العيادة', patient: 'مريض' };
-          document.getElementById('user-role-badge').textContent = roleMap[currentUser.role] || currentUser.role;
-
-          buildSidebarMenu(currentUser.role);
-          checkPatientBookingRole();
-          fetchNotifications();
-        } catch (e) {
-          window.location.href = '/login.html';
-        }
-      }
-
-      function buildSidebarMenu(role) {
-        const menu = document.getElementById('dash-nav-menu');
-        let html = `<button type="button" class="dash-nav-btn active" data-tab="overview"><span>📊</span><span data-i18n="tab_overview">نظرة عامة</span></button>`;
-        html += `<button type="button" class="dash-nav-btn" data-tab="appointments"><span>📅</span><span data-i18n="tab_appts">إدارة المواعيد</span></button>`;
-
-        if (role === 'admin' || role === 'doctor') {
-          html += `<button type="button" class="dash-nav-btn" data-tab="dental"><span>🦷</span><span data-i18n="tab_dental">السجلات الطبية</span></button>`;
-        }
-
-        if (role === 'admin') {
-          html += `<button type="button" class="dash-nav-btn" data-tab="doctors"><span>👨‍⚕️</span><span data-i18n="tab_doctors">إدارة الأطباء</span></button>`;
-          html += `<button type="button" class="dash-nav-btn" data-tab="services"><span>🛠️</span><span data-i18n="tab_services">إدارة الخدمات والأوقات</span></button>`;
-          html += `<button type="button" class="dash-nav-btn" data-tab="settings"><span>⚙️</span><span data-i18n="tab_settings">إعدادات الصفحة الرئيسية</span></button>`;
-          html += `<button type="button" class="dash-nav-btn" data-tab="finance"><span>💰</span><span data-i18n="tab_finance">التقارير المالية</span></button>`;
-        }
-
-        html += `<button type="button" class="dash-nav-btn" data-tab="profile"><span>👤</span><span data-i18n="tab_profile">الملف الشخصي</span></button>`;
-        menu.innerHTML = html;
-        applyTranslations(document.documentElement.lang || 'ar');
-      }
-
-      function checkPatientBookingRole() {
-        const bookBtn = document.getElementById('open-book-modal');
-        if (currentUser && currentUser.role === 'patient') {
-          if (bookBtn) bookBtn.style.display = 'inline-flex';
-        }
-      }
-
-      async function loadBookingOptions() {
-        const docSelect = document.getElementById('book-doctor-id');
-        const servSelect = document.getElementById('book-service-id');
-
-        try {
-          const docRes = await fetch('/api/doctors-list');
-          const docData = await docRes.json();
-          const doctors = docData.doctors || [];
-          docSelect.innerHTML = doctors.length ? doctors.map(d => `<option value="${d.id}">${d.name} (${d.specialty || 'أسنان'})</option>`).join('') : '<option value="">لا توجد أطباء متاحين</option>';
-
-          const servRes = await fetch('/api/services');
-          const servData = await servRes.json();
-          const services = servData.services || [];
-          servSelect.innerHTML = services.length ? services.map(s => `<option value="${s.id}">${s.name} - ${s.price || 0} دينار (${s.duration || 30} دقيقة)</option>`).join('') : '<option value="">لا توجد خدمات متاحة</option>';
-        } catch (e) {
-          console.error("Error loading booking options", e);
-        }
-      }
-
-      const bookModal = document.getElementById('modal-book-appointment');
-      
-      document.getElementById('open-book-modal')?.addEventListener('click', () => {
-        loadBookingOptions();
-        const todayStr = new Date().toISOString().split('T')[0];
-        document.getElementById('book-date').min = todayStr;
-        document.getElementById('book-appointment-form').reset();
-        bookModal.style.display = 'block';
-      });
-
-      document.getElementById('close-book-modal')?.addEventListener('click', () => {
-        bookModal.style.display = 'none';
-      });
-
-      document.getElementById('book-appointment-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-          doctor_id: document.getElementById('book-doctor-id').value,
-          service_id: document.getElementById('book-service-id').value,
-          date: document.getElementById('book-date').value,
-          start_time: document.getElementById('book-time').value
-        };
-
-        try {
-          const res = await fetch('/api/appointments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر حجز الموعد');
-
-          ClinicUI.showToast('تم حجز الموعد بنجاح وهو بانتظار التأكيد');
-          bookModal.style.display = 'none';
-          e.target.reset();
-          loadAppointments();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      });
-
-      function bindNavigation() {
-        document.getElementById('dash-nav-menu').addEventListener('click', (e) => {
-          const btn = e.target.closest('.dash-nav-btn[data-tab]');
-          if (!btn) return;
-          const tab = btn.dataset.tab;
-
-          document.querySelectorAll('.dash-nav-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-
-          document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-          document.getElementById(`tab-${tab}`).classList.add('active');
-
-          const titles = { 
-            overview: 'نظرة عامة', 
-            appointments: 'إدارة المواعيد', 
-            dental: 'السجلات الطبية', 
-            doctors: 'إدارة أطباء العيادة', 
-            services: 'إدارة الخدمات العلاجية', 
-            settings: 'إعدادات الصفحة الرئيسية', 
-            profile: 'الملف الشخصي',
-            finance: 'التقارير المالية والإيرادات'
-          };
-          document.getElementById('page-title').textContent = titles[tab] || 'لوحة التحكم';
-
-          loadTabData(tab);
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-          await fetch('/api/auth/logout', { method: 'POST' });
-          window.location.href = '/login.html';
-        });
-      }
-
-      async function loadTabData(tab) {
-        if (tab === 'overview' && currentUser.role === 'admin') {
-          loadAdminStats();
-        } else if (tab === 'appointments') {
-          loadAppointments();
-        } else if (tab === 'dental') {
-          loadDentalRecordsTable();
-        } else if (tab === 'doctors' && currentUser.role === 'admin') {
-          loadDoctorsTable();
-        } else if (tab === 'services' && currentUser.role === 'admin') {
-          loadServicesTable();
-        } else if (tab === 'settings' && currentUser.role === 'admin') {
-          loadClinicSettingsForm();
-        } else if (tab === 'finance' && currentUser.role === 'admin') {
-          loadFinanceReport();
-        } else if (tab === 'profile') {
-          loadProfileForm();
-        }
-      }
-
-      async function loadAdminStats() {
-        try {
-          const res = await fetch('/api/admin/stats');
-          const data = await res.json();
-          if (data.stats) {
-            document.getElementById('admin-stats-grid').style.display = 'grid';
-            document.getElementById('stat-doctors').textContent = data.stats.doctorsCount;
-            document.getElementById('stat-patients').textContent = data.stats.patientsCount;
-            document.getElementById('stat-appts').textContent = data.stats.apptsCount;
-            document.getElementById('stat-services').textContent = data.stats.servicesCount;
-          }
-        } catch (e) {}
-      }
-
-      async function loadAppointments() {
-        const tbody = document.getElementById('appointments-tbody');
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري التحميل...</td></tr>`;
-        try {
-          const endpoint = currentUser.role === 'patient' ? '/api/appointments/my' : '/api/appointments';
-          const res = await fetch(endpoint);
-          const data = await res.json();
-          const list = data.appointments || [];
-
-          if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: var(--space-6); color: var(--text-muted);">لا توجد مواعيد مسجلة حالياً.</td></tr>`;
-            return;
-          }
-
-          tbody.innerHTML = list.map(a => {
-            const serviceDisplay = a.service_name
-              ? `<span style="font-weight: 600; color: var(--text-brand);">${ClinicUI.escapeHtml(a.service_name)}</span>`
-              : `<span style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--status-warning-bg); color: var(--status-warning-text); font-weight: 600;">⏳ الخدمة قيد المراجعة</span>`;
-
-            return `
-            <tr>
-              <td><strong>${ClinicUI.escapeHtml(a.patient_name)}</strong><br><span style="font-size: 12px; color: var(--text-muted);">${ClinicUI.escapeHtml(a.patient_phone || '')}</span></td>
-              <td>${ClinicUI.escapeHtml(a.doctor_name)}<br><span style="font-size: 12px; color: var(--text-brand);">${ClinicUI.escapeHtml(a.doctor_specialty || '')}</span></td>
-              <td>${serviceDisplay}</td>
-              <td>${a.date} <br><span dir="ltr">${a.start_time}</span></td>
-              <td>
-                <span style="
-                  display: inline-block;
-                  padding: 4px 12px;
-                  border-radius: 999px;
-                  font-size: 12px;
-                  font-weight: 700;
-                  backdrop-filter: blur(8px);
-                  -webkit-backdrop-filter: blur(8px);
-                  ${a.status === 'confirmed'
-                    ? 'background: rgba(16, 185, 129, 0.16); color: #059669; border: 1px solid rgba(16, 185, 129, 0.35);'
-                    : a.status === 'cancelled'
-                    ? 'background: rgba(239, 68, 68, 0.16); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35);'
-                    : 'background: rgba(245, 158, 11, 0.16); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.35);'}
-                ">
-                  ${a.status === 'confirmed' ? 'مؤكد (Confirmed)' : a.status === 'cancelled' ? 'ملغي (Cancelled)' : 'قيد الانتظار (Pending)'}
-                </span>
-              </td>
-              <td>
-                <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
-                  ${currentUser.role !== 'patient' && a.status !== 'completed' ? `<button type="button" class="btn btn-secondary btn-sm" onclick="openAssignServiceModal(${a.id}, '${ClinicUI.escapeHtml(a.service_name || '')}')">تحديد الخدمة</button>` : ''}
-                  ${currentUser.role !== 'patient' && a.status === 'pending' ? `<button type="button" class="btn btn-primary btn-sm" onclick="updateApptStatus(${a.id}, 'confirmed')">تأكيد</button>` : ''}
-                  ${currentUser.role !== 'patient' && a.status === 'confirmed' ? `<button type="button" class="btn btn-primary btn-sm" style="background: #0d9488;" onclick='openCompleteVisitModal(${JSON.stringify(a)})'>🩺 إتمام الزيارة والسجل</button>` : ''}
-                  ${a.status === 'completed' ? `<span style="font-size: 11px; color: #059669; font-weight: 700;">✅ تمت (${a.visits_count || 1} زيارة | ${a.procedure_done ? 'بإجراء' : 'بدون إجراء'})</span>` : ''}
-                  ${a.status !== 'cancelled' && a.status !== 'completed' ? `<button type="button" class="btn btn-secondary btn-sm" onclick="updateApptStatus(${a.id}, 'cancelled')">إلغاء</button>` : ''}
-                  ${currentUser.role === 'admin' ? `<button type="button" class="btn btn-destructive btn-sm" onclick="deleteAppointment(${a.id})">حذف</button>` : ''}
-                </div>
-              </td>
-            </tr>
-          `;
-          }).join('');
-        } catch (e) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--status-error-text);">تعذر تحميل المواعيد.</td></tr>`;
-        }
-      }
-
-      window.updateApptStatus = async function(id, status) {
-        try {
-          const res = await fetch(`/api/appointments/${id}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status })
-          });
-          if (!res.ok) throw new Error('تعذر تحديث الحالة');
-          ClinicUI.showToast('تم تحديث حالة الموعد بنجاح');
-          loadAppointments();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      };
-      window.deleteAppointment = async function(id) {
-        if (!confirm('هل أنت متأكد من حذف هذا الموعد نهائياً؟')) return;
-        try {
-          const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر حذف الموعد');
-          ClinicUI.showToast('تم حذف الموعد بنجاح');
-          loadAppointments();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      };
-      window.toggleCustomServiceInput = function(val) {
-        const customGroup = document.getElementById('custom-service-name-group');
-        customGroup.style.display = (val === 'custom') ? 'block' : 'none';
-      };
-
-      window.openAssignServiceModal = async function(apptId, currentServiceName) {
-        document.getElementById('assign-appt-id').value = apptId;
-        const select = document.getElementById('assign-service-select');
-        const customInput = document.getElementById('assign-custom-service');
-        customInput.value = '';
-        document.getElementById('custom-service-name-group').style.display = 'none';
-
-        try {
-          const res = await fetch('/api/services');
-          const data = await res.json();
-          const services = data.services || [];
-          let optionsHtml = `<option value="">-- اختر خدمة من القائمة --</option>`;
-          optionsHtml += services.map(s => `<option value="${s.id}">${ClinicUI.escapeHtml(s.name)} (${s.price || 0} دينار)</option>`).join('');
-          optionsHtml += `<option value="custom">✏️ خدمة مخصصة (كتابة يدوية)...</option>`;
-          select.innerHTML = optionsHtml;
-        } catch (e) {
-          select.innerHTML = `<option value="custom">✏️ خدمة مخصصة (كتابة يدوية)...</option>`;
-        }
-
-        document.getElementById('modal-assign-service').style.display = 'block';
-      };
-
-      document.getElementById('assign-service-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const apptId = document.getElementById('assign-appt-id').value;
-        const serviceVal = document.getElementById('assign-service-select').value;
-        const customName = document.getElementById('assign-custom-service').value.trim();
-
-        if (!serviceVal) {
-          ClinicUI.showToast('يرجى اختيار خدمة أو تحديد خدمة مخصصة', 'warning');
-          return;
-        }
-        if (serviceVal === 'custom' && !customName) {
-          ClinicUI.showToast('يرجى كتابة اسم الخدمة المخصصة', 'warning');
-          return;
-        }
-
-        const payload = serviceVal === 'custom'
-          ? { service_id: null, custom_service_name: customName }
-          : { service_id: serviceVal, custom_service_name: null };
-
-        try {
-          const res = await fetch(`/api/appointments/${apptId}/service`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر تحديث الخدمة');
-
-          ClinicUI.showToast('تم اعتماد الخدمة وتحديثها للمريض بنجاح');
-          document.getElementById('modal-assign-service').style.display = 'none';
-          loadAppointments();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      });
-
-      window.toggleVisitRecordFields = function(val) {
-        document.getElementById('cv-record-details-box').style.display = (val === '1') ? 'block' : 'none';
-      };
-
-      window.openCompleteVisitModal = function(appt) {
-        document.getElementById('cv-appt-id').value = appt.id;
-        document.getElementById('cv-visit-completed').value = '1';
-        document.getElementById('cv-procedure-done').value = '1';
-        document.getElementById('cv-visits-count').value = appt.visits_count || 1;
-        document.getElementById('cv-tooth').value = 'عام';
-        document.getElementById('cv-cost').value = appt.service_price || 0;
-        document.getElementById('cv-diagnosis').value = '';
-        document.getElementById('cv-treatment').value = appt.service_name || '';
-        document.getElementById('cv-notes').value = appt.notes || '';
-        document.getElementById('cv-record-details-box').style.display = 'block';
-        document.getElementById('modal-complete-visit').style.display = 'block';
-      };
-
-      document.getElementById('complete-visit-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const apptId = document.getElementById('cv-appt-id').value;
-        const payload = {
-          visit_completed: document.getElementById('cv-visit-completed').value === '1',
-          procedure_done: document.getElementById('cv-procedure-done').value === '1',
-          visits_count: document.getElementById('cv-visits-count').value,
-          tooth_number: document.getElementById('cv-tooth').value,
-          cost: document.getElementById('cv-cost').value,
-          diagnosis: document.getElementById('cv-diagnosis').value,
-          treatment: document.getElementById('cv-treatment').value,
-          notes: document.getElementById('cv-notes').value
-        };
-
-        try {
-          const res = await fetch(`/api/appointments/${apptId}/complete-visit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر توثيق الزيارة');
-
-          ClinicUI.showToast(data.message);
-          document.getElementById('modal-complete-visit').style.display = 'none';
-          loadAppointments();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      });
-
-      async function loadDoctorsTable() {
-        const tbody = document.getElementById('doctors-tbody');
-        try {
-          const res = await fetch('/api/admin/doctors');
-          const data = await res.json();
-          const docs = data.doctors || [];
-
-          if (docs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">لا يوجد أطباء مضافين حالياً.</td></tr>`;
-            return;
-          }
-
-          tbody.innerHTML = docs.map(d => `
-            <tr>
-              <td><strong>${ClinicUI.escapeHtml(d.name)}</strong></td>
-              <td>${ClinicUI.escapeHtml(d.specialty)}</td>
-              <td dir="ltr">${ClinicUI.escapeHtml(d.email)}</td>
-              <td dir="ltr">${ClinicUI.escapeHtml(d.phone || '-')}</td>
-              <td><button type="button" class="btn btn-destructive btn-sm" onclick="deleteDoctor(${d.id})">حذف</button></td>
-            </tr>
-          `).join('');
-        } catch (e) {}
-      }
-
-      window.deleteDoctor = async function(id) {
-        if (!confirm('هل أنت متأكد من حذف هذا الطبيب؟')) return;
-        try {
-          const res = await fetch(`/api/admin/doctors/${id}`, { method: 'DELETE' });
-          if (!res.ok) throw new Error('تعذر حذف الطبيب');
-          ClinicUI.showToast('تم حذف الطبيب بنجاح');
-          loadDoctorsTable();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      };
-
-      async function loadServicesTable() {
-        const tbody = document.getElementById('services-tbody');
-        try {
-          const res = await fetch('/api/services');
-          const data = await res.json();
-          const servs = data.services || [];
-
-          if (servs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">لا توجد خدمات مضافة.</td></tr>`;
-            return;
-          }
-
-          tbody.innerHTML = servs.map(s => `
-            <tr>
-              <td><strong>${ClinicUI.escapeHtml(s.name)}</strong></td>
-              <td style="color: var(--text-secondary); max-width: 300px;">${ClinicUI.escapeHtml(s.description || '-')}</td>
-              <td><span style="font-weight: 600; color: var(--text-brand);">${s.price || 0} دينار</span></td>
-              <td>${s.duration || 30} دقيقة</td>
-              <td>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <button type="button" class="btn btn-secondary btn-sm" onclick='openEditService(${JSON.stringify(s)})'>تعديل</button>
-                  <button type="button" class="btn btn-destructive btn-sm" onclick="deleteService(${s.id})">حذف</button>
-                </div>
-              </td>
-            </tr>
-          `).join('');
-        } catch (e) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--status-error-text);">تعذر تحميل الخدمات.</td></tr>`;
-        }
-      }
-
-      window.deleteService = async function(id) {
-        if (!confirm('هل أنت متأكد من حذف هذه الخدمة؟')) return;
-        try {
-          const res = await fetch(`/api/services/${id}`, { method: 'DELETE' });
-          if (!res.ok) throw new Error('تعذر حذف الخدمة');
-          ClinicUI.showToast('تم حذف الخدمة بنجاح');
-          loadServicesTable();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      };
-
-      async function loadDentalRecordsTable() {
-        const tbody = document.getElementById('dental-records-tbody');
-        if (!tbody) return;
-        
-        const addDentalBtn = document.getElementById('open-add-dental-modal');
-        if (addDentalBtn) {
-          addDentalBtn.style.display = (currentUser && currentUser.role === 'patient') ? 'none' : 'inline-flex';
-        }
-        
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: var(--space-6);">جاري تحميل السجلات الطبية والتعليمات...</td></tr>`;
-        
-        try {
-          const endpoint = (currentUser && currentUser.role === 'patient') 
-            ? `/api/dental/records/${currentUser.id}` 
-            : '/api/dental/records';
-
-          const res = await fetch(endpoint);
-          if (!res.ok) throw new Error('فشل الاتصال بالخادم لجلب السجلات');
-          
-          const data = await res.json();
-          const records = data.records || [];
-
-          if (records.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: var(--space-6);">لا توجد سجلات طبية مسجلة حالياً.</td></tr>`;
-            return;
-          }
-
-          tbody.innerHTML = records.map(r => `
-            <tr>
-              <td><strong>${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.patient_name || '') : (r.patient_name || '')}</strong></td>
-              <td>${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.doctor_name || '') : (r.doctor_name || '')}</td>
-              <td><span style="padding: 2px 6px; background: var(--surface-subtle); border-radius: 4px; font-weight: 600; white-space: nowrap;">سن ${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(String(r.tooth_number)) : r.tooth_number}</span></td>
-              <td>
-                <div style="font-weight: 600; margin-bottom: 2px;">${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.diagnosis || '') : (r.diagnosis || '')}</div>
-                ${r.treatment ? `<div style="font-size: 13px; color: var(--text-secondary);">الإجراء: ${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.treatment) : r.treatment} (${r.cost || 0} د.أ)</div>` : ''}
-                ${r.notes ? `<div style="font-size: 12px; color: var(--text-brand); background: var(--surface-brand-tint, #eff6ff); padding: 4px 8px; border-radius: 4px; margin-top: 4px;"><strong>🤖 التعليمات:</strong> ${window.ClinicUI?.escapeHtml ? ClinicUI.escapeHtml(r.notes) : r.notes}</div>` : ''}
-              </td>
-              <td>${r.created_at ? r.created_at.split('T')[0] : '-'}</td>
-              <td>
-                ${currentUser && currentUser.role !== 'patient' ? `
-                  <div style="display: flex; gap: 6px;">
-                    <button type="button" class="btn btn-secondary btn-sm" onclick='openEditDentalRecord(${JSON.stringify(r)})'>تعديل</button>
-                    <button type="button" class="btn btn-destructive btn-sm" onclick="deleteDentalRecord(${r.id})">حذف</button>
-                  </div>
-                ` : `<span style="color: var(--text-muted); font-size: 12px;">معتمد</span>`}
-              </td>
-            </tr>
-          `).join('');
-        } catch (e) {
-          console.error("Dental records load error:", e);
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--status-error-text); padding: var(--space-6);">تعذر تحميل السجلات الطبية.</td></tr>`;
-        }
-      }
-
-      async function fetchNotifications() {
-        try {
-          const res = await fetch('/api/notifications');
-          const data = await res.json();
-          const list = data.notifications || [];
-          const unreadCount = data.unreadCount || 0;
-
-          const badge = document.getElementById('notif-badge');
-          if (unreadCount > 0) {
-            badge.textContent = unreadCount;
-            badge.style.display = 'inline-block';
-          } else {
-            badge.style.display = 'none';
-          }
-
-          const listContainer = document.getElementById('notifications-list');
-          if (list.length === 0) {
-            listContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1rem;">لا توجد إشعارات حالياً.</div>`;
-            return;
-          }
-
-          listContainer.innerHTML = list.map(n => `
-            <div style="padding: 8px; border-bottom: 1px solid var(--border-subtle); background: ${n.is_read ? 'transparent' : 'var(--surface-brand-tint, #eff6ff)'}; border-radius: 4px; margin-bottom: 4px;">
-              <div style="font-weight: 600; color: var(--text-primary);">${ClinicUI.escapeHtml(n.title)}</div>
-              <div>${ClinicUI.escapeHtml(n.message)}</div>
-              <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">${n.created_at}</div>
-            </div>
-          `).join('');
-
-        } catch (e) {
-          console.error("Error fetching notifications", e);
-        }
-      }
-
-      window.markAllNotificationsRead = async function() {
-        try {
-          await fetch('/api/notifications/read-all', { method: 'PATCH' });
-          fetchNotifications();
-          ClinicUI.showToast('تم تحديث كافة الإشعارات كمقروءة');
-        } catch (e) {
-          console.error("Error marking notifications as read", e);
-        }
-      };
-
-      document.getElementById('notifications-bell')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const dropdown = document.getElementById('notifications-dropdown');
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        if (dropdown.style.display === 'block') {
-          fetchNotifications();
-        }
-      });
-
-      window.addEventListener('click', () => {
-        const dropdown = document.getElementById('notifications-dropdown');
-        if (dropdown) dropdown.style.display = 'none';
-      });
-
-      setInterval(fetchNotifications, 60000);
-
-      window.deleteDentalRecord = async function(id) {
-        if (!confirm('هل أنت متأكد من حذف هذا السجل الطبي؟')) return;
-        try {
-          const res = await fetch(`/api/dental/records/${id}`, { method: 'DELETE' });
-          if (!res.ok) throw new Error('تعذر حذف السجل');
-          ClinicUI.showToast('تم حذف السجل الطبي بنجاح');
-          loadDentalRecordsTable();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      };
-
-      const dentalModal = document.getElementById('modal-dental');
-      document.getElementById('open-add-dental-modal')?.addEventListener('click', () => {
-        document.getElementById('dental-modal-title').textContent = 'تسجيل علاج ومعالجة سن جديد';
-        document.getElementById('edit-dental-id').value = '';
-        document.getElementById('add-dental-form').reset();
-        dentalModal.style.display = 'block';
-      });
-
-      document.getElementById('close-dental-modal')?.addEventListener('click', () => {
-        dentalModal.style.display = 'none';
-      });
-
-      window.openEditDentalRecord = function(r) {
-        document.getElementById('dental-modal-title').textContent = 'تعديل السجل الطبي وتشخيص السن';
-        document.getElementById('edit-dental-id').value = r.id;
-        document.getElementById('dental-patient-id').value = r.patient_id || '';
-        document.getElementById('dental-tooth').value = r.tooth_number || '';
-        document.getElementById('dental-diagnosis').value = r.diagnosis || '';
-        document.getElementById('dental-treatment').value = r.treatment || '';
-        document.getElementById('dental-cost').value = r.cost || 0;
-        document.getElementById('dental-care').value = r.notes || '';
-        dentalModal.style.display = 'block';
-      };
-
-      document.getElementById('generate-ai-care')?.addEventListener('click', async () => {
-        const diag = document.getElementById('dental-diagnosis').value;
-        const tooth = document.getElementById('dental-tooth').value;
-        if (!diag) {
-          ClinicUI.showToast('يرجى كتابة التشخيص أولاً ليقوم الذكاء الاصطناعي بتوليد التعليمات', 'warning');
-          return;
-        }
-
-        ClinicUI.showToast('جاري توليد تعليمات ما بعد العلاج بالذكاء الاصطناعي...', 'info');
-        try {
-          const res = await fetch('/api/ai/care-instructions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ diagnosis: diag, tooth_number: tooth })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر توليد التعليمات');
-          document.getElementById('dental-care').value = data.instructions || data.care_instructions || '';
-          ClinicUI.showToast('تم توليد التعليمات بنجاح');
-        } catch (err) {
-          document.getElementById('dental-care').value = `تعليمات العناية بالسن رقم ${tooth || 'المعالج'}: تجنب الأكل الساخن أو القاسي لمدة 24 ساعة، استخدام مسكن الألم عند الحاجة.`;
-          ClinicUI.showToast('تم توليد التعليمات بنجاح');
-        }
-      });
-
-      document.getElementById('add-dental-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const editId = document.getElementById('edit-dental-id').value;
-        const payload = {
-          patient_id: document.getElementById('dental-patient-id').value,
-          tooth_number: document.getElementById('dental-tooth').value,
-          diagnosis: document.getElementById('dental-diagnosis').value,
-          treatment: document.getElementById('dental-treatment').value,
-          cost: document.getElementById('dental-cost').value,
-          notes: document.getElementById('dental-care').value
-        };
-
-        try {
-          const url = editId ? `/api/dental/records/${editId}` : '/api/dental/records';
-          const method = editId ? 'PUT' : 'POST';
-
-          const res = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر حفظ السجل الطبي');
-
-          ClinicUI.showToast(editId ? 'تم تحديث السجل الطبي بنجاح' : 'تم حفظ السجل الطبي بنجاح');
-          dentalModal.style.display = 'none';
-          e.target.reset();
-          loadDentalRecordsTable();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      });
-
-      const servModal = document.getElementById('modal-service');
-      document.getElementById('open-add-service-modal')?.addEventListener('click', () => {
-        document.getElementById('service-modal-title').textContent = 'إضافة خدمة علاجية جديدة';
-        document.getElementById('edit-service-id').value = '';
-        document.getElementById('add-service-form').reset();
-        document.getElementById('serv-price').value = '0';
-        document.getElementById('serv-duration').value = '30';
-        servModal.style.display = 'block';
-      });
-
-      document.getElementById('close-serv-modal')?.addEventListener('click', () => {
-        servModal.style.display = 'none';
-      });
-
-      window.openEditService = function(s) {
-        document.getElementById('service-modal-title').textContent = 'تعديل الخدمة العلاجية';
-        document.getElementById('edit-service-id').value = s.id;
-        document.getElementById('serv-name').value = s.name || '';
-        document.getElementById('serv-desc').value = s.description || '';
-        document.getElementById('serv-price').value = s.price || 0;
-        document.getElementById('serv-duration').value = s.duration || 30;
-        servModal.style.display = 'block';
-      };
-
-      document.getElementById('add-service-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const editId = document.getElementById('edit-service-id').value;
-        const payload = {
-          name: document.getElementById('serv-name').value,
-          description: document.getElementById('serv-desc').value,
-          price: document.getElementById('serv-price').value,
-          duration: document.getElementById('serv-duration').value
-        };
-
-        try {
-          const url = editId ? `/api/services/${editId}` : '/api/services';
-          const method = editId ? 'PUT' : 'POST';
-
-          const res = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'تعذر حفظ الخدمة');
-
-          ClinicUI.showToast(editId ? 'تم تحديث الخدمة بنجاح' : 'تمت إضافة الخدمة بنجاح وتحديثها على الصفحة الرئيسية');
-          servModal.style.display = 'none';
-          e.target.reset();
-          loadServicesTable();
-        } catch (err) {
-          ClinicUI.showToast(err.message, 'error');
-        }
-      });
-
-      function bindActions() {
-        const docModal = document.getElementById('modal-doctor');
-        document.getElementById('open-add-doctor-modal')?.addEventListener('click', () => {
-          docModal.style.display = 'block';
-        });
-        document.getElementById('close-doc-modal')?.addEventListener('click', () => {
-          docModal.style.display = 'none';
-        });
-
-        document.getElementById('add-doctor-form')?.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const payload = {
-            name: document.getElementById('doc-name').value,
-            email: document.getElementById('doc-email').value,
-            password: document.getElementById('doc-pass').value,
-            specialty: document.getElementById('doc-spec').value,
-            phone: document.getElementById('doc-phone').value
-          };
-          try {
-            const res = await fetch('/api/admin/doctors', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-            if (!res.ok) throw new Error('تعذر إضافة الطبيب');
-            ClinicUI.showToast('تمت إضافة الطبيب بنجاح');
-            docModal.style.display = 'none';
-            e.target.reset();
-            loadDoctorsTable();
-          } catch (err) {
-            ClinicUI.showToast(err.message, 'error');
-          }
-        });
-      }
-    })();
-
-    // دوال الإعدادات والتقارير المالية
-    window.toggleEditField = function(id, btn) {
-      const input = document.getElementById(id);
-      if (input.hasAttribute('readonly')) {
-        input.removeAttribute('readonly');
-        input.style.backgroundColor = '';
-        input.style.cursor = '';
-        input.focus();
-        btn.textContent = 'إقفال';
-        btn.classList.add('btn-primary');
-        btn.classList.remove('btn-secondary');
-      } else {
-        input.setAttribute('readonly', 'true');
-        input.style.backgroundColor = 'var(--surface-subtle)';
-        input.style.cursor = 'not-allowed';
-        btn.textContent = 'تعديل';
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-secondary');
-      }
-    };
-
-    window.handleSpecialStatus = function(val) {
-      const div = document.getElementById('special-hours-div');
-      if (val === 'custom') {
-        div.style.display = 'block';
-      } else {
-        div.style.display = 'none';
-      }
-    };
-
-    window.handleMinHoursChange = function(val) {
-      const customInput = document.getElementById('set-min-hours-custom');
-      if (val === 'custom') {
-        customInput.style.display = 'block';
-        customInput.focus();
-      } else {
-        customInput.style.display = 'none';
-      }
-    };
-
-    async function loadClinicSettingsForm() {
-      try {
-        const res = await fetch('/api/settings');
-        if (!res.ok) return;
-        const data = await res.json();
-        
-        if (data) {
-          if (data.clinic_name) document.getElementById('set-clinic-name').value = data.clinic_name;
-          if (data.clinic_address) document.getElementById('set-clinic-address').value = data.clinic_address;
-          
-          if (data.work_days_from) document.getElementById('set-day-from').value = data.work_days_from;
-          if (data.work_days_to) document.getElementById('set-day-to').value = data.work_days_to;
-
-          if (data.working_hours) {
-            const parts = data.working_hours.split('-');
-            if (parts.length === 2) {
-              document.getElementById('set-work-start').value = parts[0].trim();
-              document.getElementById('set-work-end').value = parts[1].trim();
-            }
-          }
-
-          if (data.special_day) document.getElementById('set-special-day').value = data.special_day;
-          if (data.special_status) {
-            document.getElementById('set-special-status').value = data.special_status;
-            handleSpecialStatus(data.special_status);
-          }
-          if (data.special_hours && data.special_status === 'custom') {
-            const spParts = data.special_hours.split('-');
-            if (spParts.length === 2) {
-              document.getElementById('set-special-start').value = spParts[0].trim();
-              document.getElementById('set-special-end').value = spParts[1].trim();
-            }
-          }
-
-          let phone = data.clinic_phone || '';
-          const prefixes = ['+962', '+966', '+963', '+970', '+971', '+20'];
-          let matchedPrefix = '+962';
-          let cleanPhone = phone;
-
-          for (const p of prefixes) {
-            if (phone.startsWith(p)) {
-              matchedPrefix = p;
-              cleanPhone = phone.replace(p, '').trim();
-              break;
-            }
-          }
-          document.getElementById('set-phone-prefix').value = matchedPrefix;
-          document.getElementById('set-clinic-phone').value = cleanPhone;
-
-          if (data.clinic_email) document.getElementById('set-clinic-email').value = data.clinic_email;
-          
-          // تحميل الإحصائيات والمميزات
-          const statsContainer = document.getElementById('dynamic-stats-container');
-          statsContainer.innerHTML = '';
-          let statsList = [];
-          if (data.clinic_stats_json) {
-            try { statsList = JSON.parse(data.clinic_stats_json); } catch (e) {}
-          }
-          if (!Array.isArray(statsList) || statsList.length === 0) {
-            statsList = [
-              { value: data.stat_1_value || '+15 سنة', label: data.stat_1_label || 'خبرة سريرية متخصصة' },
-              { value: data.stat_2_value || '100%', label: data.stat_2_label || 'تعقيم بمعايير دولية' },
-              { value: data.stat_3_value || '3 ساعات', label: data.stat_3_label || 'حد أدنى لتأكيد الموعد' }
-            ];
-          }
-          statsList.forEach(item => addStatItemRow(item.value, item.label));
-
-          // تحميل عنوان وخطوات الزيارة في العيادة
-          const vTitleInput = document.getElementById('set-visit-steps-title');
-          if (vTitleInput) vTitleInput.value = data.visit_steps_title || 'كيف تتم زيارتك في العيادة؟';
-
-          const stepsContainer = document.getElementById('admin-visit-steps-container');
-          stepsContainer.innerHTML = '';
-          let visitStepsList = [];
-          if (data.visit_steps_json) {
-            try { visitStepsList = JSON.parse(data.visit_steps_json); } catch (e) {}
-          }
-          if (!Array.isArray(visitStepsList) || visitStepsList.length === 0) {
-            visitStepsList = [
-              { title: '1. استشارة وتقييم أولي:', desc: 'صف أعراضك للمساعد الطبي الذكي أو اختر الخدمة العلاجية المناسبة مباشرة.' },
-              { title: '2. تحديد الطبيب والوقت:', desc: 'اختر الموعد المناسب لك مسبقاً لتجنب الازدحام والانتظار في العيادة.' },
-              { title: '3. متابعة سجلك الرقمي:', desc: 'اطّلع على تفاصيل كل جلسة وتعليمات ما بعد العلاج من حسابك الشخصي.' }
-            ];
-          }
-          visitStepsList.forEach(st => addVisitStepRow(st.title, st.desc));
-
-          const minHours = data.min_booking_hours || '3';
-          const selectElem = document.getElementById('set-min-hours-select');
-          const customInput = document.getElementById('set-min-hours-custom');
-          
-          let foundOption = false;
-          for (let opt of selectElem.options) {
-            if (opt.value === String(minHours)) {
-              foundOption = true;
-              break;
-            }
-          }
-
-          if (foundOption) {
-            selectElem.value = String(minHours);
-            customInput.style.display = 'none';
-          } else {
-            selectElem.value = 'custom';
-            customInput.style.display = 'block';
-            customInput.value = minHours;
-          }
-        }
-      } catch (e) {
-        console.error("Error loading settings:", e);
-      }
-    }
-
-    let lastFinanceTransactions = [];
-
-    window.resetFinanceFilter = function() {
-      document.getElementById('fin-date-from').value = '';
-      document.getElementById('fin-date-to').value = '';
-      loadFinanceReport();
-    };
-
-    window.exportFinanceCSV = function() {
-      if (!lastFinanceTransactions.length) {
-        ClinicUI.showToast('لا توجد بيانات مالية لتصديرها', 'warning');
-        return;
-      }
-      const headers = ['التاريخ', 'الوقت', 'المريض', 'الطبيب', 'الخدمة', 'الحالة', 'المبلغ (دينار)'];
-      const rows = lastFinanceTransactions.map(t => [
-        t.date, t.start_time, `"${t.patient_name}"`, `"${t.doctor_name}"`, `"${t.service_name}"`, t.status, t.amount
-      ]);
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `clinic-finance-report-${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-    async function loadFinanceReport() {
-      try {
-        const from = document.getElementById('fin-date-from')?.value || '';
-        const to = document.getElementById('fin-date-to')?.value || '';
-        const params = new URLSearchParams();
-        if (from) params.append('from', from);
-        if (to) params.append('to', to);
-
-        const res = await fetch(`/api/finance/summary?${params.toString()}`);
-        if (!res.ok) throw new Error('فشل جلب البيانات المالية');
-        const data = await res.json();
-
-        document.getElementById('finance-total-revenue').textContent = `${data.totalRevenue || 0} دينار`;
-        document.getElementById('finance-paid-count').textContent = data.paidCount || 0;
-
-        const servicesTbody = document.getElementById('finance-services-tbody');
-        if (!data.revenueByService || data.revenueByService.length === 0) {
-          servicesTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">لا توجد إيرادات مسجلة في هذه الفترة.</td></tr>`;
-        } else {
-          servicesTbody.innerHTML = data.revenueByService.map(s => `
-            <tr>
-              <td><strong>${ClinicUI.escapeHtml(s.service_name)}</strong></td>
-              <td>${s.booking_count}</td>
-              <td><span style="font-weight: 600; color: var(--text-brand);">${s.revenue} دينار</span></td>
-            </tr>
-          `).join('');
-        }
-
-        lastFinanceTransactions = data.transactions || [];
-        const txTbody = document.getElementById('finance-transactions-tbody');
-        if (txTbody) {
-          if (lastFinanceTransactions.length === 0) {
-            txTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">لا توجد معاملات مالية مسجلة.</td></tr>`;
-          } else {
-            txTbody.innerHTML = lastFinanceTransactions.map(t => `
-              <tr>
-                <td>${t.date} <span dir="ltr" style="font-size: 12px; color: var(--text-muted);">(${t.start_time})</span></td>
-                <td><strong>${ClinicUI.escapeHtml(t.patient_name)}</strong></td>
-                <td>${ClinicUI.escapeHtml(t.doctor_name)}</td>
-                <td>${ClinicUI.escapeHtml(t.service_name)}</td>
-                <td>${t.status === 'completed' ? 'مكتمل' : 'مؤكد'}</td>
-                <td><strong style="color: var(--text-brand);">${t.amount} دينار</strong></td>
-              </tr>
-            `).join('');
-          }
-        }
-      } catch (e) {
-        console.error("Error loading finance report:", e);
-      }
-    }
-
-    document.getElementById('clinic-settings-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const phonePrefix = document.getElementById('set-phone-prefix').value;
-      const phoneNum = document.getElementById('set-clinic-phone').value.trim();
-      const fullPhone = phoneNum ? `${phonePrefix} ${phoneNum}` : '';
-
-      const workStart = document.getElementById('set-work-start').value;
-      const workEnd = document.getElementById('set-work-end').value;
-      const workingHours = (workStart && workEnd) ? `${workStart} - ${workEnd}` : '';
-
-      const email = document.getElementById('set-clinic-email').value.trim();
-      
-      if (email) {
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(email)) {
-          ClinicUI.showToast('يرجى إدخال بريد إلكتروني صحيح', 'error');
-          return;
-        }
-      }
-
-      const selectVal = document.getElementById('set-min-hours-select').value;
-      const finalMinHours = (selectVal === 'custom') ? document.getElementById('set-min-hours-custom').value : selectVal;
-
-      const specialStatus = document.getElementById('set-special-status').value;
-      const spStart = document.getElementById('set-special-start').value;
-      const spEnd = document.getElementById('set-special-end').value;
-      const specialHours = (specialStatus === 'custom' && spStart && spEnd) ? `${spStart} - ${spEnd}` : '';
-
-      const payload = {
-        clinic_stats_json: JSON.stringify(getDynamicStatsPayload()),
-        visit_steps_title: document.getElementById('set-visit-steps-title')?.value.trim() || 'كيف تتم زيارتك في العيادة؟',
-        visit_steps_json: JSON.stringify(getVisitStepsPayload()),
-        clinic_name: document.getElementById('set-clinic-name').value,
-        clinic_address: document.getElementById('set-clinic-address').value,
-        work_days_from: document.getElementById('set-day-from').value,
-        work_days_to: document.getElementById('set-day-to').value,
-        working_hours: workingHours,
-        special_day: document.getElementById('set-special-day').value,
-        special_status: specialStatus,
-        special_hours: specialHours,
-        clinic_phone: fullPhone,
-        clinic_email: email,
-        min_booking_hours: finalMinHours
-      };
-
-      try {
-        const res = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'تعذر حفظ الإعدادات');
-
-        ClinicUI.showToast('تم تحديث الإعدادات وترحيلها بنجاح');
-        loadClinicSettingsForm();
-        window.savedClinicName = payload.clinic_name;
-        const brandEl = document.getElementById('brand-clinic-name');
-        if (brandEl && payload.clinic_name) brandEl.textContent = payload.clinic_name;
-      } catch (err) {
-        ClinicUI.showToast(err.message, 'error');
-      }
-    });
-
-    // رفع واستبدال الفيديو الخلفي بشرط مطابقة الاسم dental-bg.mp4
-    document.getElementById('upload-bg-video-btn')?.addEventListener('click', async () => {
-      const fileInput = document.getElementById('bg-video-file-input');
-      const file = fileInput?.files?.[0];
-
-      if (!file) {
-        ClinicUI.showToast('يرجى اختيار ملف فيديو أولاً', 'warning');
-        return;
-      }
-
-      if (file.name !== 'dental-bg.mp4') {
-        ClinicUI.showToast('خطأ في التسمية: يجب أن يكون اسم الملف dental-bg.mp4 بالضبط!', 'error');
-        fileInput.value = '';
-        return;
-      }
-
-      const btn = document.getElementById('upload-bg-video-btn');
-      ClinicUI.setButtonLoading(btn, true, 'جاري رفع الفيديو...');
-
-      try {
-        const res = await fetch('/api/settings/upload-video', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'video/mp4',
-            'X-File-Name': file.name
-          },
-          body: file
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'تعذر رفع الفيديو');
-
-        ClinicUI.showToast('تم تحديث الفيديو الخلفي (dental-bg.mp4) بنجاح!');
-        fileInput.value = '';
-      } catch (err) {
-        ClinicUI.showToast(err.message, 'error');
-      } finally {
-        ClinicUI.setButtonLoading(btn, false);
-      }
-    });
-
-    window.addStatItemRow = function(val = '', lbl = '') {
-      const container = document.getElementById('dynamic-stats-container');
-      const index = container.children.length + 1;
-      const row = document.createElement('div');
-      row.className = 'stat-item-row';
-      row.style.cssText = 'display: grid; grid-template-columns: 1fr 1.5fr auto; gap: 0.5rem; align-items: end; background: var(--surface-subtle); padding: 0.75rem; border-radius: 8px;';
-      row.innerHTML = `
-        <div>
-          <label style="font-size: 11px; display: block; margin-bottom: 2px;">الميزة #${index} (الرقم / العنوان):</label>
-          <input type="text" class="form-input stat-val-input" value="${ClinicUI.escapeHtml(val)}" placeholder="مثال: +15 سنة" required>
-        </div>
-        <div>
-          <label style="font-size: 11px; display: block; margin-bottom: 2px;">الوصف المختصر:</label>
-          <input type="text" class="form-input stat-lbl-input" value="${ClinicUI.escapeHtml(lbl)}" placeholder="مثال: خبرة سريرية متخصصة" required>
-        </div>
-        <button type="button" class="btn btn-destructive btn-sm" onclick="removeStatItemRow(this)" title="حذف هذه الميزة">✕</button>
-      `;
-      container.appendChild(row);
-    };
-
-    window.removeStatItemRow = function(btn) {
-      const container = document.getElementById('dynamic-stats-container');
-      if (container.children.length <= 1) {
-        ClinicUI.showToast('يجب الإبقاء على ميزة واحدة على الأقل', 'warning');
-        return;
-      }
-      btn.closest('.stat-item-row').remove();
-      Array.from(container.children).forEach((row, idx) => {
-        const firstLabel = row.querySelector('label');
-        if (firstLabel) firstLabel.textContent = `الميزة #${idx + 1} (الرقم / العنوان):`;
-      });
-    };
-
-    function getDynamicStatsPayload() {
-      const rows = document.querySelectorAll('#dynamic-stats-container .stat-item-row');
-      const result = [];
-      rows.forEach(row => {
-        const val = row.querySelector('.stat-val-input').value.trim();
-        const lbl = row.querySelector('.stat-lbl-input').value.trim();
-        if (val || lbl) {
-          result.push({ value: val, label: lbl });
-        }
-      });
-      return result;
-    }
-
-    // دوال إدارة خطوات الزيارة في العيادة
-    window.addVisitStepRow = function(title = '', desc = '') {
-      const container = document.getElementById('admin-visit-steps-container');
-      const index = container.children.length + 1;
-      const row = document.createElement('div');
-      row.className = 'visit-step-row';
-      row.style.cssText = 'display: grid; grid-template-columns: 1fr 1.8fr auto; gap: 0.5rem; align-items: start; background: var(--surface-subtle); padding: 0.75rem; border-radius: 8px;';
-      row.innerHTML = `
-        <div>
-          <label style="font-size: 11px; display: block; margin-bottom: 2px;">عنوان الخطوة #${index}:</label>
-          <input type="text" class="form-input step-title-input" value="${ClinicUI.escapeHtml(title)}" placeholder="مثال: ${index}. استشارة وتقييم أولي:" required>
-        </div>
-        <div>
-          <label style="font-size: 11px; display: block; margin-bottom: 2px;">التفاصيل:</label>
-          <textarea class="form-textarea step-desc-input" rows="2" placeholder="شرح الخطوة بالتفصيل" required>${ClinicUI.escapeHtml(desc)}</textarea>
-        </div>
-        <button type="button" class="btn btn-destructive btn-sm" style="margin-top: 18px;" onclick="removeVisitStepRow(this)" title="حذف هذه الخطوة">✕</button>
-      `;
-      container.appendChild(row);
-    };
-
-    window.removeVisitStepRow = function(btn) {
-      const container = document.getElementById('admin-visit-steps-container');
-      if (container.children.length <= 1) {
-        ClinicUI.showToast('يجب الإبقاء على خطوة واحدة على الأقل', 'warning');
-        return;
-      }
-      btn.closest('.visit-step-row').remove();
-      Array.from(container.children).forEach((row, idx) => {
-        const firstLabel = row.querySelector('label');
-        if (firstLabel) firstLabel.textContent = `عنوان الخطوة #${idx + 1}:`;
-      });
-    };
-
-    function getVisitStepsPayload() {
-      const rows = document.querySelectorAll('#admin-visit-steps-container .visit-step-row');
-      const result = [];
-      rows.forEach(row => {
-        const title = row.querySelector('.step-title-input')?.value.trim() || '';
-        const desc = row.querySelector('.step-desc-input')?.value.trim() || '';
-        if (title || desc) {
-          result.push({ title, desc });
-        }
-      });
-      return result;
-    }
-    
-    window.toggleDarkMode = function() {
-      const isDark = document.documentElement.classList.toggle('dark-mode');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      const btn = document.getElementById('theme-toggle-btn');
-      if (btn) btn.textContent = isDark ? '☀️' : '🌙';
-    };
-
-    const translations = {
-      ar: {
-        clinic_name: "عيادة الابتسامة الذكية",
-        nav_services: "الخدمات والأسعار",
-        nav_booking: "حجز موعد",
-        nav_doctors: "الكادر الطبي",
-        nav_contact: "الموقع وساعات العمل",
-        login_btn: "تسجيل الدخول",
-        book_now: "احجز موعدك",
-        hero_eyebrow: "عمّان - شارع الجاردنز : حجز إلكتروني فوري",
-        hero_title: "رعاية أسنان دقيقة بتقنيات حديثة وأسعار واضحة",
-        hero_desc: "نجمع بين الخبرة السريرية وأدوات التقييم الذكي لنمنحك خطة علاجية شفافة، مواعيد منظمة بدون انتظار طويل، وسجلاً طبياً رقمياً متكاملاً لكل زيارة.",
-        hero_cta_book: "احجز موعدك الآن",
-        hero_cta_services: "استعرض الخدمات والأسعار",
-        services_title: "الخدمات العلاجية المعتمدة",
-        services_sub: "قائمة محدثة مباشرة من نظام العيادة تشمل مدة الجلسة التقديرية لكل خدمة علاجية.",
-        booking_title: "حجز موعد زيارة",
-        doctors_title: "الكادر الطبي المتخصص",
-        dash_title: "لوحة التحكم",
-        dash_home: "الرئيسية",
-        dash_logout: "تسجيل الخروج",
-        tab_overview: "نظرة عامة",
-        tab_appts: "إدارة المواعيد",
-        tab_dental: "السجلات الطبية",
-        tab_doctors: "إدارة الأطباء",
-        tab_services: "إدارة الخدمات والأوقات",
-        tab_settings: "إعدادات الصفحة الرئيسية",
-        tab_finance: "التقارير المالية",
-        tab_profile: "الملف الشخصي"
-      },
-      en: {
-        clinic_name: "Smart Smile Dental Clinic",
-        nav_services: "Services & Prices",
-        nav_booking: "Book Appointment",
-        nav_doctors: "Medical Team",
-        nav_contact: "Location & Hours",
-        login_btn: "Login",
-        book_now: "Book Now",
-        hero_eyebrow: "Amman - Gardens St: Instant Online Booking",
-        hero_title: "Precision Dental Care with Modern Tech & Transparent Pricing",
-        hero_desc: "We combine clinical expertise with smart evaluation tools to give you a transparent treatment plan, organized appointments without long waits, and a complete digital medical record.",
-        hero_cta_book: "Book Your Appointment",
-        hero_cta_services: "Explore Services & Prices",
-        services_title: "Approved Dental Services",
-        services_sub: "Directly updated from our clinic system including estimated session duration.",
-        booking_title: "Book a Visit",
-        doctors_title: "Specialized Medical Team",
-        dash_title: "Dashboard",
-        dash_home: "Home",
-        dash_logout: "Logout",
-        tab_overview: "Overview",
-        tab_appts: "Appointments",
-        tab_dental: "Dental Records",
-        tab_doctors: "Manage Doctors",
-        tab_services: "Services & Times",
-        tab_settings: "Home Settings",
-        tab_finance: "Financial Reports",
-        tab_profile: "Profile"
-      }
-    };
-
-    function applyTranslations(lang) {
-      const dict = translations[lang] || translations.ar;
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (key === 'clinic_name' && window.savedClinicName) {
-          el.textContent = window.savedClinicName;
-          return;
-        }
-        if (dict[key]) {
-          el.textContent = dict[key];
-        }
-      });
-    }
-
-    window.toggleLanguage = function() {
-      const currentLang = document.documentElement.lang || 'ar';
-      const newLang = currentLang === 'ar' ? 'en' : 'ar';
-      document.documentElement.lang = newLang;
-      document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-      localStorage.setItem('app_lang', newLang);
-      location.reload();
-    };
-
-    document.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('theme') === 'dark') {
-        document.documentElement.classList.add('dark-mode');
-        const tBtn = document.getElementById('theme-toggle-btn');
-        if (tBtn) tBtn.textContent = '☀️';
-      }
-      const savedLang = localStorage.getItem('app_lang') || 'ar';
-      document.documentElement.lang = savedLang;
-      document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr';
-      const lBtn = document.getElementById('lang-toggle-btn');
-      if (lBtn) lBtn.textContent = savedLang === 'ar' ? 'EN' : 'عربي';
-      applyTranslations(savedLang);
-    });
-
-  </script>
+  <script type="module" src="/js/dashboard/dash-main.js"></script>
 </body>
 </html>

@@ -1,0 +1,377 @@
+/* ============================================================
+   1. الخلفية الزجاجية وتنسيق الصفحة العام
+   ============================================================ */
+body.auth-page {
+  background: radial-gradient(circle at 18% 20%, rgba(13, 148, 136, 0.16), transparent 45%),
+              radial-gradient(circle at 82% 80%, rgba(56, 189, 248, 0.16), transparent 45%),
+              linear-gradient(135deg, #f0fdfa 0%, #f8fafc 50%, #eff6ff 100%) !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-topbar {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8) !important;
+}
+
+.auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7.2rem 1.25rem 3rem;
+  position: relative;
+}
+
+/* ============================================================
+   2. بطاقة تسجيل الدخول الزجاجية
+   ============================================================ */
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 3.3rem 2rem 2rem !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.09) !important;
+  overflow: visible !important;
+}
+
+/* ============================================================
+   3. مسرح الطبيب الصغير وطبقات العمق والحركة
+   ============================================================ */
+.mascot-perch-container {
+  position: absolute;
+  top: -114px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 190px;
+  height: 154px;
+  z-index: 30;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  background: transparent !important;
+  filter: drop-shadow(0 14px 20px rgba(15, 23, 42, 0.14));
+  transition: filter 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mascot-perch-container:hover {
+  filter: drop-shadow(0 18px 26px rgba(13, 148, 136, 0.28));
+}
+
+.mascot-aura-ring {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 118px;
+  height: 118px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.16) 0%, rgba(56, 189, 248, 0.06) 55%, transparent 75%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  animation: auraBreath 4s ease-in-out infinite;
+}
+
+.dark-mode .mascot-aura-ring {
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.22) 0%, rgba(56, 189, 248, 0.08) 55%, transparent 75%);
+  border-color: rgba(45, 212, 191, 0.25);
+}
+
+.mascot-pulse-wave {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  border-radius: 999px;
+  border: 2px solid rgba(13, 148, 136, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mascot-pulse-wave.is-rippling {
+  animation: mascotRipple 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+#little-doctor-svg {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  background: transparent !important;
+}
+
+@keyframes auraBreath {
+  0%, 100% { transform: translateX(-50%) scale(0.96); opacity: 0.78; }
+  50% { transform: translateX(-50%) scale(1.06); opacity: 1; }
+}
+
+@keyframes mascotRipple {
+  0% { transform: scale(0.75); opacity: 0.85; }
+  100% { transform: scale(1.75); opacity: 0; }
+}
+
+@keyframes doctorBreathe {
+  0%, 100% { transform: translateY(0px) scaleY(1); }
+  50% { transform: translateY(-2.5px) scaleY(1.015); }
+}
+
+@keyframes seatedLegSwingA {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-7deg); }
+}
+
+@keyframes seatedLegSwingB {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(7deg); }
+}
+
+.doc-body-seated {
+  animation: doctorBreathe 3.4s ease-in-out infinite;
+  transform-origin: 95px 115px;
+}
+
+.leg-left-seated {
+  transform-origin: 79px 108px;
+  animation: seatedLegSwingA 3.8s ease-in-out infinite;
+}
+
+.leg-right-seated {
+  transform-origin: 110px 108px;
+  animation: seatedLegSwingB 3.8s ease-in-out infinite 0.55s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-aura-ring,
+  .doc-body-seated,
+  .leg-left-seated,
+  .leg-right-seated {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   4. العناوين، التبويبات، والحقول
+   ============================================================ */
+.auth-title {
+  text-align: center;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 0.25rem 0 0.35rem !important;
+  letter-spacing: -0.01em;
+}
+
+.auth-subtitle {
+  text-align: center;
+  font-size: 0.9rem !important;
+  color: #475569 !important;
+  margin: 0 0 1.4rem !important;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+  padding: 0.35rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  margin-bottom: 1.35rem;
+}
+
+.auth-tab-btn {
+  padding: 0.6rem 0.75rem !important;
+  border-radius: 10px !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #475569 !important;
+  cursor: pointer;
+  transition: all 0.25s ease !important;
+}
+
+.auth-tab-btn[aria-selected="true"] {
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: #0d9488 !important;
+  border-color: rgba(13, 148, 136, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+}
+
+.auth-panel {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.form-group { margin-bottom: 1.05rem; text-align: start; }
+
+.form-label {
+  display: block;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  margin-bottom: 0.42rem !important;
+}
+
+.form-input {
+  width: 100%;
+  height: 44px;
+  padding: 0.6rem 0.9rem !important;
+  font-size: 0.92rem !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(148, 163, 184, 0.38) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+}
+
+.form-input:focus {
+  background: #ffffff !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3.5px rgba(13, 148, 136, 0.16) !important;
+  outline: none;
+}
+
+.password-field-wrap { position: relative; display: flex; align-items: center; }
+
+.password-toggle-btn {
+  position: absolute;
+  inset-inline-end: 0.6rem;
+  background: transparent !important;
+  border: none !important;
+  color: #64748b !important;
+  padding: 0.35rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.password-toggle-btn:hover { color: #0d9488 !important; }
+
+.auth-helper-row { display: flex; justify-content: flex-end; margin: -0.35rem 0 1.1rem; }
+
+.text-link-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #0d9488 !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  padding: 0;
+}
+.text-link-btn:hover { text-decoration: underline; }
+
+button[type="submit"], .btn-primary {
+  height: 46px;
+  border-radius: 12px !important;
+  font-size: 0.96rem !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(13, 148, 136, 0.45) !important;
+  box-shadow: 0 8px 20px rgba(13, 148, 136, 0.25) !important;
+  opacity: 1 !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
+}
+
+button[type="submit"]:hover, .btn-primary:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(13, 148, 136, 0.35) !important;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+.btn-secondary:hover {
+  background: rgba(13, 148, 136, 0.14) !important;
+  color: #0d9488 !important;
+  border-color: #0d9488 !important;
+}
+
+.auth-footer-note {
+  margin-top: 1.35rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  text-align: center;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+.auth-footer-note a { color: #0d9488; font-weight: 600; }
+
+/* ============================================================
+   5. الوضع الليلي الزجاجي الداكن
+   ============================================================ */
+.dark-mode body.auth-page {
+  background: radial-gradient(circle at 18% 20%, rgba(13, 148, 136, 0.24), transparent 45%),
+              radial-gradient(circle at 82% 80%, rgba(56, 189, 248, 0.16), transparent 45%),
+              linear-gradient(135deg, #070b14 0%, #0f172a 55%, #091322 100%) !important;
+}
+
+.dark-mode .auth-topbar {
+  background: rgba(15, 23, 42, 0.72) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-mode .auth-card {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45) !important;
+}
+
+.dark-mode .auth-title { color: #f8fafc !important; }
+.dark-mode .auth-subtitle { color: #94a3b8 !important; }
+.dark-mode .form-label { color: #e2e8f0 !important; }
+
+.dark-mode .auth-tabs {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.dark-mode .auth-tab-btn { color: #94a3b8 !important; }
+.dark-mode .auth-tab-btn[aria-selected="true"] {
+  background: rgba(45, 212, 191, 0.18) !important;
+  color: #2dd4bf !important;
+  border-color: rgba(45, 212, 191, 0.35) !important;
+}
+
+.dark-mode .form-input {
+  background: rgba(15, 23, 42, 0.78) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+.dark-mode .form-input:focus {
+  border-color: #2dd4bf !important;
+  box-shadow: 0 0 0 3.5px rgba(45, 212, 191, 0.2) !important;
+}
+
+.dark-mode .btn-secondary {
+  background: rgba(30, 41, 59, 0.8) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+.dark-mode .btn-secondary:hover {
+  background: rgba(45, 212, 191, 0.2) !important;
+  color: #5eead4 !important;
+  border-color: #2dd4bf !important;
+}
+.dark-mode .text-link-btn,
+.dark-mode .auth-footer-note a { color: #2dd4bf !important; }
