@@ -11,7 +11,7 @@ router.get('/my', isAuthenticated, (req, res) => {
       SELECT a.*, 
              p.name as patient_name, p.phone as patient_phone,
              d.name as doctor_name, d.specialty as doctor_specialty,
-             s.name as service_name, s.price as service_price, s.duration as service_duration
+             COALESCE(a.custom_service_name, s.name) as service_name, s.price as service_price, s.duration as service_duration
       FROM appointments a
       JOIN users p ON a.patient_id = p.id
       JOIN users d ON a.doctor_id = d.id
@@ -45,7 +45,7 @@ router.get('/', isAuthenticated, (req, res) => {
       SELECT a.*, 
              p.name as patient_name, p.phone as patient_phone,
              d.name as doctor_name, d.specialty as doctor_specialty,
-             s.name as service_name, s.price as service_price, s.duration as service_duration
+             COALESCE(a.custom_service_name, s.name) as service_name, s.price as service_price, s.duration as service_duration
       FROM appointments a
       JOIN users p ON a.patient_id = p.id
       JOIN users d ON a.doctor_id = d.id
@@ -131,7 +131,7 @@ router.post('/', isAuthenticated, (req, res) => {
       SELECT a.*, 
              p.name as patient_name, p.phone as patient_phone,
              d.name as doctor_name, d.specialty as doctor_specialty,
-             s.name as service_name, s.price as service_price
+             COALESCE(a.custom_service_name, s.name) as service_name, s.price as service_price
       FROM appointments a
       JOIN users p ON a.patient_id = p.id
       JOIN users d ON a.doctor_id = d.id
@@ -144,6 +144,11 @@ router.post('/', isAuthenticated, (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// إضافة أعمدة متابعة الزيارة والإجراء وعدد الزيارات تلقائياً
+try { db.prepare("ALTER TABLE appointments ADD COLUMN visit_completed INTEGER DEFAULT 0").run(); } catch (e) {}
+try { db.prepare("ALTER TABLE appointments ADD COLUMN procedure_done INTEGER DEFAULT 0").run(); } catch (e) {}
+try { db.prepare("ALTER TABLE appointments ADD COLUMN visits_count INTEGER DEFAULT 1").run(); } catch (e) {}
 
 // تحديث حالة الموعد (مع إرسال إشعار للمريض عند التأكيد أو الإلغاء)
 router.patch('/:id/status', isAuthenticated, (req, res) => {
@@ -180,6 +185,127 @@ router.patch('/:id/status', isAuthenticated, (req, res) => {
   }
 });
 
+// مسار توثيق إتمام الزيارة وإنشاء سجل طبي مرتبط تلقائياً (يؤثر مباشرة على التقارير المالية)
+router.post('/:id/complete-visit', isAuthenticated, (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user || user.role === 'patient') {
+      return res.status(403).json({ error: 'غير مصرح للمريض' });
+    }
+
+    const { id } = req.params;
+    const {
+      visit_completed,
+      procedure_done,
+      visits_count,
+      tooth_number,
+      diagnosis,
+      treatment,
+      cost,
+      notes
+    } = req.body;
+
+    const appt = db.prepare(`
+      SELECT a.*, COALESCE(a.custom_service_name, s.name, 'استشارة وعلاج') AS final_service_name,
+             COALESCE(s.price, 0) AS default_price
+      FROM appointments a
+      LEFT JOIN services s ON a.service_id = s.id
+      WHERE a.id = ?
+    `).get(id);
+
+    if (!appt) return res.status(404).json({ error: 'الموعد غير موجود' });
+
+    const isCompleted = visit_completed ? 1 : 0;
+    const isProcedureDone = procedure_done ? 1 : 0;
+    const vCount = Math.max(1, Number(visits_count) || 1);
+    const newStatus = isCompleted ? 'completed' : appt.status;
+
+    db.prepare(`
+      UPDATE appointments 
+      SET status = ?, visit_completed = ?, procedure_done = ?, visits_count = ?
+      WHERE id = ?
+    `).run(newStatus, isCompleted, isProcedureDone, vCount, id);
+
+    if (isCompleted) {
+      const finalCost = (cost !== undefined && cost !== '') ? Number(cost) : Number(appt.default_price || 0);
+      const finalTreatment = treatment || appt.final_service_name;
+      const finalDiagnosis = diagnosis || `متابعة موعد (${appt.final_service_name}) - عدد الزيارات: ${vCount}`;
+      const finalNotes = `${notes || ''} [عدد الزيارات المحتاجة: ${vCount} | تم الإجراء: ${isProcedureDone ? 'نعم' : 'لا'}]`.trim();
+
+      db.prepare(`
+        INSERT INTO dental_records (patient_id, doctor_id, tooth_number, diagnosis, treatment, cost, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        appt.patient_id,
+        appt.doctor_id,
+        tooth_number || 'عام',
+        finalDiagnosis,
+        finalTreatment,
+        finalCost,
+        finalNotes
+      );
+
+      db.prepare(`
+        INSERT INTO notifications (user_id, title, message)
+        VALUES (?, ?, ?)
+      `).run(
+        appt.patient_id,
+        'تم توثيق زيارتك وإضافة السجل الطبي',
+        `تم تسجيل إتمام زيارتك بتاريخ ${appt.date} (${finalTreatment}) بتكلفة ${finalCost} دينار.`
+      );
+    }
+
+    res.json({ message: isCompleted ? 'تم توثيق الزيارة وإنشاء السجل الطبي وترحيله للتقارير المالية بنجاح' : 'تم حفظ حالة متابعة الموعد' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// إضافة عمود الخدمة المخصصة تلقائياً لجدول المواعيد إن لم يكن موجوداً
+try { db.prepare("ALTER TABLE appointments ADD COLUMN custom_service_name TEXT").run(); } catch (e) {}
+
+// تحديد أو تخصيص خدمة الموعد (صلاحية الأدمن والطبيب) مع إرسال إشعار للمريض
+router.patch('/:id/service', isAuthenticated, (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user || user.role === 'patient') {
+      return res.status(403).json({ error: 'غير مصرح للمريض بتعديل نوع الخدمة' });
+    }
+
+    const { id } = req.params;
+    const { service_id, custom_service_name } = req.body;
+
+    const appt = db.prepare('SELECT * FROM appointments WHERE id = ?').get(id);
+    if (!appt) return res.status(404).json({ error: 'الموعد غير موجود' });
+
+    let finalServiceName = custom_service_name;
+
+    if (custom_service_name) {
+      db.prepare('UPDATE appointments SET service_id = NULL, custom_service_name = ? WHERE id = ?')
+        .run(custom_service_name, id);
+    } else {
+      db.prepare('UPDATE appointments SET service_id = ?, custom_service_name = NULL WHERE id = ?')
+        .run(service_id, id);
+      const srv = db.prepare('SELECT name FROM services WHERE id = ?').get(service_id);
+      finalServiceName = srv ? srv.name : 'خدمة علاجية محددة';
+    }
+
+    // إرسال إشعار فوري للمريض بالخدمة التي تم اعتمادها له
+    db.prepare(`
+      INSERT INTO notifications (user_id, title, message)
+      VALUES (?, ?, ?)
+    `).run(
+      appt.patient_id,
+      'تم تحديد خدمة موعدك',
+      `تم اعتماد الخدمة (${finalServiceName}) لموعدك المقرر بتاريخ ${appt.date} الساعة ${appt.start_time}`
+    );
+
+    res.json({ message: 'تم اعتماد وتحديث الخدمة للمريض بنجاح' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // تحديث ملاحظات الموعد
 router.patch('/:id/notes', isAuthenticated, (req, res) => {
   try {
@@ -193,9 +319,13 @@ router.patch('/:id/notes', isAuthenticated, (req, res) => {
   }
 });
 
-// حذف موعد
+// حذف موعد (صلاحية الأدمن فقط)
 router.delete('/:id', isAuthenticated, (req, res) => {
   try {
+    const user = req.session.user;
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'عذراً، صلاحية حذف المواعيد متاحة للأدمن فقط' });
+    }
     const { id } = req.params;
     db.prepare('DELETE FROM appointments WHERE id = ?').run(id);
     res.json({ message: 'تم حذف الموعد بنجاح' });

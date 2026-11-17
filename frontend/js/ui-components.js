@@ -253,18 +253,19 @@ window.ClinicUI = (function () {
       return;
     }
 
+    const isEn = (localStorage.getItem('app_lang') || 'ar') === 'en';
     const banner = document.createElement('aside');
     banner.className = 'cookie-banner animate-enter';
-    banner.setAttribute('aria-label', 'إشعار ملفات تعريف الارتباط');
+    banner.setAttribute('aria-label', isEn ? 'Cookie notice' : 'إشعار ملفات تعريف الارتباط');
     banner.innerHTML = `
       <div style="font-size: var(--text-sm); color: var(--text-secondary);">
-        <strong style="color: var(--text-primary);">خصوصية بياناتك وملفات الارتباط:</strong>
-        نستخدم ملفات تعريف الارتباط الضرورية لإدارة جلسة دخولك بأمان وتحسين تجربة حجز المواعيد.
-        <a href="/privacy.html" style="text-decoration: underline;">سياسة الخصوصية</a>
+        <strong style="color: var(--text-primary);">${isEn ? 'Your Data Privacy & Cookies:' : 'خصوصية بياناتك وملفات الارتباط:'}</strong>
+        ${isEn ? 'We use essential cookies to securely manage your login session and improve your booking experience.' : 'نستخدم ملفات تعريف الارتباط الضرورية لإدارة جلسة دخولك بأمان وتحسين تجربة حجز المواعيد.'}
+        <a href="/privacy.html" style="text-decoration: underline;">${isEn ? 'Privacy Policy' : 'سياسة الخصوصية'}</a>
       </div>
       <div style="display: flex; gap: var(--space-2); flex-shrink: 0;">
-        <button type="button" class="btn btn-secondary btn-sm" id="cookie-decline-btn">الضرورية فقط</button>
-        <button type="button" class="btn btn-primary btn-sm" id="cookie-accept-btn">موافق</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="cookie-decline-btn">${isEn ? 'Essential Only' : 'الضرورية فقط'}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="cookie-accept-btn">${isEn ? 'Accept' : 'موافق'}</button>
       </div>
     `;
     document.body.appendChild(banner);
@@ -298,20 +299,22 @@ window.ClinicUI = (function () {
     root.className = 'ai-floating-root';
 
     // استبدل كود زر الإغلاق في الـ HTML داخل الدالة بهذا الشكل لضمان الاستجابة الفورية:
+    const isEn = (localStorage.getItem('app_lang') || 'ar') === 'en';
+
     root.innerHTML = `
-      <div id="ai-popover-panel" class="ai-popover-panel animate-enter" role="dialog" aria-label="المساعد الطبي الذكي" hidden>
-        <div class="ai-popover-header" id="ai-popover-drag-handle" title="اسحب لتحريك النافذة">
+      <div id="ai-popover-panel" class="ai-popover-panel animate-enter" role="dialog" aria-label="${isEn ? 'Smart Medical Assistant' : 'المساعد الطبي الذكي'}" hidden>
+        <div class="ai-popover-header" id="ai-popover-drag-handle" title="${isEn ? 'Drag to move window' : 'اسحب لتحريك النافذة'}">
           <div class="ai-popover-title-wrap">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-brand)" stroke-width="2.2" aria-hidden="true">
               <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
               <path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/>
             </svg>
             <div>
-              <strong style="display: block; font-size: var(--text-sm); color: var(--text-primary); line-height: 1.2;">المساعد الطبي الذكي</strong>
-              <span style="display: block; font-size: var(--text-xs); color: var(--text-muted);">اسحب الزر لتحريكه في الشاشة</span>
+              <strong style="display: block; font-size: var(--text-sm); color: var(--text-primary); line-height: 1.2;">${isEn ? 'Smart Medical Assistant' : 'المساعد الطبي الذكي'}</strong>
+              <span style="display: block; font-size: var(--text-xs); color: var(--text-muted);">${isEn ? 'Drag button to move on screen' : 'اسحب الزر لتحريكه في الشاشة'}</span>
             </div>
           </div>
-          <button type="button" class="ai-popover-close" id="ai-popover-close-btn" aria-label="إغلاق المساعد الذكي" style="cursor: pointer; z-index: 20; position: relative;">
+          <button type="button" class="ai-popover-close" id="ai-popover-close-btn" aria-label="${isEn ? 'Close Smart Assistant' : 'إغلاق المساعد الذكي'}" style="cursor: pointer; z-index: 20; position: relative;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -321,26 +324,28 @@ window.ClinicUI = (function () {
 
         <div class="ai-chat-stream" id="ai-chat-stream" aria-live="polite">
           <div class="ai-msg-bubble ai-msg-assistant">
-            أهلاً بك في عيادة الابتسامة الذكية. صف لي الأعراض التي تشعر بها وسأرشح لك العلاج المناسب وتكلفته التقديرية من خدمات عيادتنا.
+            ${isEn 
+              ? 'Welcome to Smart Smile Dental Clinic. Describe your symptoms and I will recommend the suitable treatment and estimated cost from our clinic services.' 
+              : 'أهلاً بك في عيادة الابتسامة الذكية. صف لي الأعراض التي تشعر بها وسأرشح لك العلاج المناسب وتكلفته التقديرية من خدمات عيادتنا.'}
           </div>
         </div>
 
-        <div class="ai-quick-chips" aria-label="أمثلة سريعة للأعراض">
-          <button type="button" class="ai-chip-btn" data-prompt="ألم في الضرس عند شرب الماء البارد">حساسية الماء البارد</button>
-          <button type="button" class="ai-chip-btn" data-prompt="نزيف وتورم بسيط في اللثة عند التفريش">نزيف اللثة</button>
-          <button type="button" class="ai-chip-btn" data-prompt="أرغب بتنظيف الأسنان وإزالة الجير">تنظيف وإزالة الجير</button>
+        <div class="ai-quick-chips" aria-label="${isEn ? 'Quick symptom examples' : 'أمثلة سريعة للأعراض'}">
+          <button type="button" class="ai-chip-btn" data-prompt="${isEn ? 'Tooth pain when drinking cold water' : 'ألم في الضرس عند شرب الماء البارد'}">${isEn ? 'Cold Water Sensitivity' : 'حساسية الماء البارد'}</button>
+          <button type="button" class="ai-chip-btn" data-prompt="${isEn ? 'Mild gum bleeding and swelling when brushing' : 'نزيف وتورم بسيط في اللثة عند التفريش'}">${isEn ? 'Bleeding Gums' : 'نزيف اللثة'}</button>
+          <button type="button" class="ai-chip-btn" data-prompt="${isEn ? 'I want teeth cleaning and tartar removal' : 'أرغب بتنظيف الأسنان وإزالة الجير'}">${isEn ? 'Teeth Cleaning & Scaling' : 'تنظيف وإزالة الجير'}</button>
         </div>
 
         <form class="ai-popover-footer" id="ai-popover-form" novalidate>
-          <label for="ai-popover-input" class="sr-only">اكتب أعراضك هنا</label>
+          <label for="ai-popover-input" class="sr-only">${isEn ? 'Type your symptoms here' : 'اكتب أعراضك هنا'}</label>
           <textarea
             id="ai-popover-input"
             class="ai-popover-input"
             rows="1"
-            placeholder="اكتب أعراضك هنا..."
+            placeholder="${isEn ? 'Type your symptoms here...' : 'اكتب أعراضك هنا...'}"
             required
           ></textarea>
-          <button type="submit" id="ai-popover-send-btn" class="btn btn-primary btn-sm" aria-label="إرسال">
+          <button type="submit" id="ai-popover-send-btn" class="btn btn-primary btn-sm" aria-label="${isEn ? 'Send' : 'إرسال'}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
               <line x1="22" y1="2" x2="11" y2="13"/>
               <polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -355,13 +360,13 @@ window.ClinicUI = (function () {
         class="ai-fab-trigger"
         aria-expanded="false"
         aria-controls="ai-popover-panel"
-        aria-label="فتح المساعد الطبي الذكي (قابل للسحب)"
+        aria-label="${isEn ? 'Open Smart Medical Assistant (Draggable)' : 'فتح المساعد الطبي الذكي (قابل للسحب)'}"
       >
         <span class="ai-fab-badge" aria-hidden="true"></span>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span>المساعد الذكي</span>
+        <span>${isEn ? 'Smart Assistant' : 'المساعد الذكي'}</span>
       </button>
     `;
 
@@ -606,6 +611,7 @@ window.ClinicUI = (function () {
       });
 
       if (role === 'assistant') {
+        const isEn = (localStorage.getItem('app_lang') || 'ar') === 'en';
         const actionRow = document.createElement('div');
         actionRow.style.marginTop = 'var(--space-2)';
         actionRow.style.paddingTop = 'var(--space-2)';
@@ -614,7 +620,7 @@ window.ClinicUI = (function () {
         bookBtn.type = 'button';
         bookBtn.className = 'btn btn-secondary btn-sm';
         bookBtn.style.width = '100%';
-        bookBtn.textContent = 'الانتقال لحجز موعد';
+        bookBtn.textContent = isEn ? 'Proceed to Book Appointment' : 'الانتقال لحجز موعد';
         bookBtn.addEventListener('click', () => {
           closePopover();
           const bookingSec = document.getElementById('booking');
@@ -683,13 +689,80 @@ window.ClinicUI = (function () {
   document.addEventListener('DOMContentLoaded', () => {
     initCookieAndAnalytics();
     initFloatingAiAssistant();
+    if ((localStorage.getItem('app_lang') || 'ar') === 'en') {
+      translateDynamicElements(document.body);
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach(m => {
+          m.addedNodes.forEach(n => {
+            if (n.nodeType === 1) translateDynamicElements(n);
+          });
+        });
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
   });
+
+  // 7. محرك الترجمة الشامل (ثابت + ترجمة تلقائية فورية لمدخلات الأدمن والطبيب)
+  const translationCache = JSON.parse(sessionStorage.getItem('clinic_tr_cache') || '{}');
+
+  async function autoTranslateText(text, targetLang) {
+    if (!text || targetLang !== 'en' || !/[\u0600-\u06FF]/.test(text)) return text;
+    const clean = text.trim();
+    if (translationCache[clean]) return translationCache[clean];
+
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=${encodeURIComponent(clean)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const translated = data[0].map(item => item[0]).join('');
+      if (translated) {
+        translationCache[clean] = translated;
+        sessionStorage.setItem('clinic_tr_cache', JSON.stringify(translationCache));
+        return translated;
+      }
+    } catch (e) {}
+    return text;
+  }
+
+  async function translateDynamicElements(rootElement = document.body) {
+    const lang = localStorage.getItem('app_lang') || 'ar';
+    if (lang !== 'en') return;
+
+    const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_TEXT, null, false);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      const parentTag = node.parentElement?.tagName;
+      if (parentTag !== 'SCRIPT' && parentTag !== 'STYLE' && /[\u0600-\u06FF]/.test(node.nodeValue)) {
+        nodes.push(node);
+      }
+    }
+
+    for (const textNode of nodes) {
+      const original = textNode.nodeValue;
+      const trimmed = original.trim();
+      if (trimmed) {
+        const translated = await autoTranslateText(trimmed, 'en');
+        textNode.nodeValue = original.replace(trimmed, translated);
+      }
+    }
+
+    // ترجمة الـ placeholders
+    rootElement.querySelectorAll('[placeholder]').forEach(async el => {
+      const ph = el.getAttribute('placeholder');
+      if (ph && /[\u0600-\u06FF]/.test(ph)) {
+        el.setAttribute('placeholder', await autoTranslateText(ph, 'en'));
+      }
+    });
+  }
 
   return {
     showToast,
     setButtonLoading,
     setFieldError,
     createCustomSelect,
-    escapeHtml
+    escapeHtml,
+    autoTranslateText,
+    translateDynamicElements
   };
 })();
