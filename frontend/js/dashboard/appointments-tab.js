@@ -80,13 +80,21 @@ export async function loadAppointments() {
         ? `<span style="font-weight: 600; color: var(--text-brand);">${ClinicUI.escapeHtml(a.service_name)}</span>`
         : `<span style="padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--status-warning-bg); color: var(--status-warning-text); font-weight: 600;">⏳ الخدمة قيد المراجعة</span>`;
 
-      const badgeStyle = a.status === 'confirmed'
+    const badgeStyle = a.status === 'completed'
+        ? 'background: rgba(13, 148, 136, 0.16); color: #0f766e; border: 1px solid rgba(13, 148, 136, 0.35);'
+        : a.status === 'confirmed'
         ? 'background: rgba(16, 185, 129, 0.16); color: #059669; border: 1px solid rgba(16, 185, 129, 0.35);'
         : a.status === 'cancelled'
         ? 'background: rgba(239, 68, 68, 0.16); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35);'
         : 'background: rgba(245, 158, 11, 0.16); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.35);';
 
-      const statusText = a.status === 'confirmed' ? 'مؤكد (Confirmed)' : a.status === 'cancelled' ? 'ملغي (Cancelled)' : 'قيد الانتظار (Pending)';
+      const statusText = a.status === 'completed'
+        ? 'مكتمل (Completed)'
+        : a.status === 'confirmed'
+        ? 'مؤكد (Confirmed)'
+        : a.status === 'cancelled'
+        ? 'ملغي (Cancelled)'
+        : 'قيد الانتظار (Pending)';
 
       return `
         <tr>
@@ -98,9 +106,10 @@ export async function loadAppointments() {
           <td>
             <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
               ${activeUser.role !== 'patient' && a.status !== 'completed' ? `<button type="button" class="btn btn-secondary btn-sm" onclick="openAssignServiceModal(${a.id})">تحديد الخدمة</button>` : ''}
-              ${activeUser.role !== 'patient' && a.status === 'pending' ? `<button type="button" class="btn btn-primary btn-sm" onclick="updateApptStatus(${a.id}, 'confirmed')">تأكيد</button>` : ''}
-              ${activeUser.role !== 'patient' && a.status === 'confirmed' ? `<button type="button" class="btn btn-primary btn-sm" style="background: #0d9488;" onclick='openCompleteVisitModal(${JSON.stringify(a)})'>🩺 إتمام الزيارة والسجل</button>` : ''}
-              ${a.status === 'completed' ? `<span style="font-size: 11px; color: #059669; font-weight: 700;">✅ تمت (${a.visits_count || 1} زيارة | ${a.procedure_done ? 'بإجراء' : 'بدون إجراء'})</span>` : ''}
+              ${activeUser.role !== 'patient' && a.status === 'pending' ? `<button type="button" class="btn btn-primary btn-sm" onclick="updateApptStatus(${a.id}, 'confirmed')">موافقة وتأكيد</button>` : ''}
+              ${activeUser.role !== 'patient' && a.status === 'confirmed' ? `<button type="button" class="btn btn-primary btn-sm" onclick="updateApptStatus(${a.id}, 'completed')">حضر وأتمّ الزيارة (سجل تلقائي)</button>` : ''}
+              ${activeUser.role !== 'patient' && a.status === 'confirmed' ? `<button type="button" class="btn btn-secondary btn-sm" onclick='openCompleteVisitModal(${JSON.stringify(a)})'>توثيق مخصص</button>` : ''}
+              ${a.status === 'completed' ? `<span style="font-size: 11px; color: var(--status-success-text); font-weight: 700;">تمت الزيارة ونزل السجل الطبي</span>` : ''}
               ${a.status !== 'cancelled' && a.status !== 'completed' ? `<button type="button" class="btn btn-secondary btn-sm" onclick="updateApptStatus(${a.id}, 'cancelled')">إلغاء</button>` : ''}
               ${activeUser.role === 'admin' ? `<button type="button" class="btn btn-destructive btn-sm" onclick="deleteAppointment(${a.id})">حذف</button>` : ''}
             </div>
@@ -114,12 +123,12 @@ export async function loadAppointments() {
 
 window.updateApptStatus = async (id, status) => {
   try {
-    await apiRequest(`/api/appointments/${id}/status`, {
+    const res = await apiRequest(`/api/appointments/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
-    ClinicUI.showToast('تم تحديث حالة الموعد بنجاح');
+    ClinicUI.showToast(res.message || 'تم تحديث حالة الموعد بنجاح');
     loadAppointments();
   } catch (err) {
     ClinicUI.showToast(err.message, 'error');

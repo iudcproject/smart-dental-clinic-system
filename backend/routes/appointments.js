@@ -64,8 +64,11 @@ router.get('/', isDoctorOrAdmin, (req, res) => {
 router.post('/', isAuthenticated, (req, res) => {
   try {
     const appointment = visitService.createAppointment(req.session.user, req.body);
+    const isStaff = req.session.user.role === 'doctor' || req.session.user.role === 'admin';
     res.status(201).json({
-      message: 'تم حجز الموعد بنجاح وهو قيد انتظار موافقة الطبيب',
+      message: isStaff
+        ? 'تم حجز الموعد وتأكيده مباشرة بنجاح'
+        : 'تم حجز الموعد بنجاح وهو قيد انتظار موافقة الطبيب',
       appointment
     });
   } catch (e) {
@@ -100,6 +103,11 @@ router.patch('/:id/status', isAuthenticated, (req, res) => {
       }
     } else if (user.role === 'doctor' && appt.doctor_id !== user.id) {
       return res.status(403).json({ error: 'هذا الموعد مسجل لدى طبيب آخر' });
+    }
+
+    if (status === 'completed') {
+      visitService.autoCompleteAppointmentAndCreateRecord(id);
+      return res.json({ message: 'تم تأكيد حضور المريض وإتمام الزيارة وتنزيل السجل الطبي تلقائياً' });
     }
 
     db.prepare('UPDATE appointments SET status = ? WHERE id = ?').run(status, id);

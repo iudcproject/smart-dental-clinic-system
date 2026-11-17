@@ -1,12 +1,169 @@
 import { apiRequest } from '../core/app-shell.js';
 
 let activeUser = null;
+let allPatientsCache = [];
 
 export function initRecordsCatalogTabs(user) {
   activeUser = user;
+  bindPatientModal();
   bindDentalModal();
   bindDoctorModal();
   bindServiceModal();
+}
+
+// --- 0. إدارة المرضى ---
+function renderPatientsRows(rows) {
+  const tbody = document.getElementById('patients-tbody');
+  if (!tbody) return;
+
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: var(--space-6);">لا يوجد مرضى مطابقون حالياً.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((p) => {
+    const joinedDate = p.created_at ? String(p.created_at).split('T')[0].split(' ')[0] : '-';
+    return `
+      <tr>
+        <td><span style="padding: 2px 8px; background: var(--surface-subtle); border-radius: 6px; font-weight: 700;">#${p.id}</span></td>
+        <td><strong>${ClinicUI.escapeHtml(p.name)}</strong></td>
+        <td dir="ltr">${ClinicUI.escapeHtml(p.email)}</td>
+        <td dir="ltr">${ClinicUI.escapeHtml(p.phone || '-')}</td>
+        <td>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px; font-size: 12px;">
+            <span style="padding: 2px 8px; border-radius: 999px; background: rgba(13, 148, 136, 0.14); color: var(--text-brand); font-weight: 700;">المواعيد: ${p.appointments_count || 0}</span>
+            <span style="padding: 2px 8px; border-radius: 999px; background: rgba(56, 189, 248, 0.16); color: var(--text-primary); font-weight: 700;">السجلات: ${p.records_count || 0}</span>
+          </div>
+        </td>
+        <td>${joinedDate}</td>
+        <td>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.openBookingModalForPatient(${p.id})">+ موعد</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="openAddDentalForPatient(${p.id})">+ سجل طبي</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick='openEditPatient(${JSON.stringify(p)})'>تعديل</button>
+            <button type="button" class="btn btn-destructive btn-sm" onclick="deletePatient(${p.id})">حذف</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+window.filterPatientsTable = () => {
+  const query = (document.getElementById('patients-search-input')?.value || '').trim().toLowerCase();
+  if (!query) return renderPatientsRows(allPatientsCache);
+  const filtered = allPatientsCache.filter((p) =>
+    String(p.name || '').toLowerCase().includes(query) ||
+    String(p.email || '').toLowerCase().includes(query) ||
+    String(p.phone || '').toLowerCase().includes(query) ||
+    String(p.id || '').includes(query)
+  );
+  renderPatientsRows(filtered);
+};
+
+export async function loadPatientsTable() {
+  const tbody = document.getElementById('patients-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: var(--space-6);">جاري تحميل قائمة المرضى...</td></tr>`;
+
+  try {
+    const data = await apiRequest('/api/patients');
+    allPatientsCache = data.patients || [];
+    window.filterPatientsTable();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--status-error-text);">تعذر تحميل بيانات المرضى.</td></tr>`;
+  }
+}
+
+function bindPatientModal() {
+  const modal = document.getElementById('modal-patient');
+  document.getElementById('open-add-patient-modal')?.addEventListener('click', () => {
+    document.getElementById('patient-modal-title').textContent = 'إضافة مريض جديد';
+    document.getElementById('edit-patient-id').value = '';
+    document.getElementById('add-patient-form').reset();
+    const passInput = document.getElementById('pat-pass');
+    passInput.required = true;
+    passInput.placeholder = '6 أحرف على الأقل';
+    document.getElementById('pat-pass-hint').textContent = '(مطلوبة عند إنشاء حساب مريض جديد)';
+    modal.style.display = 'block';
+  });
+
+  document.getElementById('close-patient-modal')?.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  document.getElementById('add-patient-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const editId = document.getElementById('edit-patient-id').value;
+    const payload = {
+      name: document.getElementById('pat-name').value,
+      email: document.getElementById('pat-email').value,
+      phone: document.getElementById('pat-phone').value,
+      password: document.getElementById('pat-pass').value
+    };
+
+    try {
+      const res = await apiRequest(editId ? `/api/patients/${editId}` : '/api/patients', {
+        method: editId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      ClinicUI.showToast(res.message || (editId ? 'تم تحديث بيانات المريض بنجاح' : 'تمت إضافة المريض بنجاح'));
+      modal.style.display = 'none';
+      e.target.reset();
+      loadPatientsTable();
+    } catch (err) {
+      ClinicUI.showToast(err.message, 'error');
+    }
+  });
+}
+
+window.openEditPatient = (p) => {
+  document.getElementById('patient-modal-title').textContent = `تعديل بيانات المريض (#${p.id})`;
+  document.getElementById('edit-patient-id').value = p.id;
+  document.getElementById('pat-name').value = p.name || '';
+  document.getElementById('pat-email').value = p.email || '';
+  document.getElementById('pat-phone').value = p.phone || '';
+  const passInput = document.getElementById('pat-pass');
+  passInput.value = '';
+  passInput.required = false;
+  passInput.placeholder = 'اتركه فارغاً للإبقاء على كلمة المرور الحالية';
+  document.getElementById('pat-pass-hint').textContent = '(اختياري عند التعديل)';
+  document.getElementById('modal-patient').style.display = 'block';
+};
+
+window.deletePatient = async (id) => {
+  if (!confirm('هل أنت متأكد من حذف هذا المريض؟ سيتم حذف جميع مواعيده وسجلاته الطبية المرتبطة به نهائياً.')) return;
+  try {
+    const res = await apiRequest(`/api/patients/${id}`, { method: 'DELETE' });
+    ClinicUI.showToast(res.message || 'تم حذف المريض بنجاح');
+    loadPatientsTable();
+  } catch (err) {
+    ClinicUI.showToast(err.message, 'error');
+  }
+};
+
+window.openAddDentalForPatient = async (patientId) => {
+  await populateDentalPatientSelect(patientId);
+  document.getElementById('dental-modal-title').textContent = 'تسجيل علاج ومعالجة سن جديد';
+  document.getElementById('edit-dental-id').value = '';
+  document.getElementById('add-dental-form').reset();
+  document.getElementById('dental-patient-id').value = String(patientId);
+  document.getElementById('modal-dental').style.display = 'block';
+};
+
+async function populateDentalPatientSelect(selectedId = '') {
+  const select = document.getElementById('dental-patient-id');
+  if (!select) return;
+  try {
+    const data = await apiRequest('/api/patients');
+    const patients = data.patients || [];
+    allPatientsCache = patients;
+    select.innerHTML = patients.length
+      ? patients.map((p) => `<option value="${p.id}" ${String(p.id) === String(selectedId) ? 'selected' : ''}>#${p.id} - ${ClinicUI.escapeHtml(p.name)} ${p.phone ? `(${ClinicUI.escapeHtml(p.phone)})` : ''}</option>`).join('')
+      : '<option value="">لا يوجد مرضى مسجلون</option>';
+  } catch {
+    select.innerHTML = '<option value="">تعذر تحميل قائمة المرضى</option>';
+  }
 }
 
 // --- 1. السجلات الطبية ---
@@ -53,10 +210,11 @@ export async function loadDentalRecordsTable() {
 
 function bindDentalModal() {
   const modal = document.getElementById('modal-dental');
-  document.getElementById('open-add-dental-modal')?.addEventListener('click', () => {
+  document.getElementById('open-add-dental-modal')?.addEventListener('click', async () => {
     document.getElementById('dental-modal-title').textContent = 'تسجيل علاج ومعالجة سن جديد';
     document.getElementById('edit-dental-id').value = '';
     document.getElementById('add-dental-form').reset();
+    await populateDentalPatientSelect();
     modal.style.display = 'block';
   });
   document.getElementById('close-dental-modal')?.addEventListener('click', () => { modal.style.display = 'none'; });
@@ -101,16 +259,20 @@ function bindDentalModal() {
       modal.style.display = 'none';
       e.target.reset();
       loadDentalRecordsTable();
+      if (document.getElementById('tab-patients')?.classList.contains('active')) {
+        loadPatientsTable();
+      }
     } catch (err) {
       ClinicUI.showToast(err.message, 'error');
     }
   });
 }
 
-window.openEditDentalRecord = (r) => {
+window.openEditDentalRecord = async (r) => {
+  await populateDentalPatientSelect(r.patient_id);
   document.getElementById('dental-modal-title').textContent = 'تعديل السجل الطبي وتشخيص السن';
   document.getElementById('edit-dental-id').value = r.id;
-  document.getElementById('dental-patient-id').value = r.patient_id || '';
+  document.getElementById('dental-patient-id').value = String(r.patient_id || '');
   document.getElementById('dental-tooth').value = r.tooth_number || '';
   document.getElementById('dental-diagnosis').value = r.diagnosis || '';
   document.getElementById('dental-treatment').value = r.treatment || '';

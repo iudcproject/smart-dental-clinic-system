@@ -35,19 +35,52 @@ router.get('/summary', isAuthenticated, (req, res) => {
 
     const totalRevenue = transactions.reduce((sum, row) => sum + Number(row.amount || 0), 0);
     const paidCount = transactions.length;
+    const averageRevenue = paidCount > 0 ? Math.round((totalRevenue / paidCount) * 100) / 100 : 0;
+
+    // حساب الإيرادات المتوقعة من المواعيد المؤكدة وقيد الانتظار
+    let apptFilter = '';
+    const apptParams = [];
+    if (from) { apptFilter += ' AND a.date >= ?'; apptParams.push(from); }
+    if (to) { apptFilter += ' AND a.date <= ?'; apptParams.push(to); }
+
+    const pendingRow = db.prepare(`
+      SELECT COALESCE(SUM(COALESCE(s.price, 0)), 0) AS expected_revenue,
+             COUNT(a.id) AS upcoming_count
+      FROM appointments a
+      LEFT JOIN dental_services s ON a.service_id = s.id
+      WHERE a.status IN ('pending', 'confirmed') ${apptFilter}
+    `).get(...apptParams);
 
     const byServiceMap = {};
+    const byDoctorMap = {};
+
     transactions.forEach((r) => {
       if (!byServiceMap[r.service_name]) {
         byServiceMap[r.service_name] = { service_name: r.service_name, booking_count: 0, revenue: 0 };
       }
       byServiceMap[r.service_name].booking_count += 1;
       byServiceMap[r.service_name].revenue += Number(r.amount || 0);
+
+      if (!byDoctorMap[r.doctor_name]) {
+        byDoctorMap[r.doctor_name] = { doctor_name: r.doctor_name, session_count: 0, revenue: 0 };
+      }
+      byDoctorMap[r.doctor_name].session_count += 1;
+      byDoctorMap[r.doctor_name].revenue += Number(r.amount || 0);
     });
 
     const revenueByService = Object.values(byServiceMap).sort((a, b) => b.revenue - a.revenue);
+    const revenueByDoctor = Object.values(byDoctorMap).sort((a, b) => b.revenue - a.revenue);
 
-    res.json({ totalRevenue, paidCount, revenueByService, transactions });
+    res.json({
+      totalRevenue,
+      paidCount,
+      averageRevenue,
+      expectedRevenue: Number(pendingRow?.expected_revenue || 0),
+      upcomingCount: Number(pendingRow?.upcoming_count || 0),
+      revenueByService,
+      revenueByDoctor,
+      transactions
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

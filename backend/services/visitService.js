@@ -18,8 +18,10 @@ function createHttpError(status, message) {
 // 1. التحقق من شروط الحجز وإنشاء الموعد مع إشعار الطبيب
 function createAppointment(user, payload) {
   const { doctor_id, service_id, date, start_time, notes, patient_id } = payload;
+  const isStaff = user.role === 'doctor' || user.role === 'admin';
+  const targetDoctorId = user.role === 'doctor' && !doctor_id ? user.id : doctor_id;
 
-  if (!doctor_id || !date || !start_time) {
+  if (!targetDoctorId || !date || !start_time) {
     throw createHttpError(400, 'الطبيب والتاريخ والساعة مطلوبة');
   }
   if (start_time < '09:00' || start_time > '20:00') {
@@ -31,17 +33,19 @@ function createAppointment(user, payload) {
   const [h, m] = start_time.split(':').map(Number);
   const appointmentDateTime = new Date(year, month - 1, day, h, m, 0, 0);
 
-  const minHoursRow = db.prepare("SELECT setting_value FROM clinic_settings WHERE setting_key = 'min_booking_hours'").get();
-  const minHours = minHoursRow ? Number(minHoursRow.setting_value) : 3;
+  if (!isStaff) {
+    const minHoursRow = db.prepare("SELECT setting_value FROM clinic_settings WHERE setting_key = 'min_booking_hours'").get();
+    const minHours = minHoursRow ? Number(minHoursRow.setting_value) : 3;
 
-  if ((appointmentDateTime - now) / (1000 * 60 * 60) < minHours) {
-    throw createHttpError(400, `عذراً، يجب أن يتم حجز الموعد قبل ${minHours} ساعات على الأقل من وقت الزيارة`);
+    if ((appointmentDateTime - now) / (1000 * 60 * 60) < minHours) {
+      throw createHttpError(400, `عذراً، يجب أن يتم حجز الموعد قبل ${minHours} ساعات على الأقل من وقت الزيارة`);
+    }
   }
 
   const conflictAppt = db.prepare(`
     SELECT id FROM appointments 
     WHERE doctor_id = ? AND date = ? AND start_time = ? AND status != 'cancelled'
-  `).get(doctor_id, date, start_time);
+  `).get(targetDoctorId, date, start_time);
 
   if (conflictAppt) {
     throw createHttpError(400, 'عذراً، الطبيب لديه موعد محجوز مسبقاً في هذا التوقيت، يرجى اختيار وقت آخر');
@@ -59,18 +63,27 @@ function createAppointment(user, payload) {
   }
 
   const targetPatientId = user.role === 'patient' ? user.id : patient_id;
-  if (!targetPatientId) throw createHttpError(400, 'المريض مطلوب');
+  if (!targetPatientId) throw createHttpError(400, 'يرجى اختيار المريض المطلوب');
+
+  const initialStatus = isStaff ? 'confirmed' : 'pending';
 
   const insertTransaction = db.transaction(() => {
     const info = db.prepare(`
       INSERT INTO appointments (doctor_id, patient_id, service_id, date, start_time, end_time, status, notes)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
-    `).run(doctor_id, targetPatientId, service_id || null, date, start_time, calculatedEndTime, notes || '');
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(targetDoctorId, targetPatientId, service_id || null, date, start_time, calculatedEndTime, initialStatus, notes || '');
 
-    db.prepare(`
-      INSERT INTO notifications (user_id, title, message)
-      VALUES (?, ?, ?)
-    `).run(doctor_id, 'موعد جديد بانتظار التأكيد', `قام المريض بحجز موعد جديد بتاريخ ${date} الساعة ${start_time}`);
+    if (isStaff) {
+      db.prepare(`
+        INSERT INTO notifications (user_id, title, message)
+        VALUES (?, ?, ?)
+      `).run(targetPatientId, 'تم حجز وتأكيد موعد جديد لك', `تم تحديد موعد مؤكد لك في العيادة بتاريخ ${date} الساعة ${start_time}`);
+    } else {
+      db.prepare(`
+        INSERT INTO notifications (user_id, title, message)
+        VALUES (?, ?, ?)
+      `).run(targetDoctorId, 'موعد جديد بانتظار التأكيد', `قام المريض بحجز موعد جديد بتاريخ ${date} الساعة ${start_time}`);
+    }
 
     return info.lastInsertRowid;
   });
@@ -169,8 +182,62 @@ function assignAppointmentService(appointmentId, { service_id, custom_service_na
   );
 }
 
+// 4. أتمتة إتمام الزيارة وتنزيل السجل الطبي للمريض تلقائياً من بيانات الموعد السابقة
+function autoCompleteAppointmentAndCreateRecord(appointmentId) {
+  const appt = db.prepare(`
+    SELECT a.*, COALESCE(a.custom_service_name, s.name, 'كشف وعلاج أسنان') AS final_service_name,
+           COALESCE(s.price, 0) AS default_price
+    FROM appointments a
+    LEFT JOIN dental_services s ON a.service_id = s.id
+    WHERE a.id = ?
+  `).get(appointmentId);
+
+  if (!appt) throw createHttpError(404, 'الموعد غير موجود');
+
+  const runAutomation = db.transaction(() => {
+    db.prepare(`
+      UPDATE appointments 
+      SET status = 'completed', visit_completed = 1, procedure_done = 1, visits_count = COALESCE(visits_count, 1)
+      WHERE id = ?
+    `).run(appointmentId);
+
+    // منع تكرار السجل الطبي إذا تم إتمام الموعد مسبقاً
+    if (Number(appt.visit_completed) !== 1) {
+      const autoDiagnosis = appt.notes && appt.notes.trim()
+        ? appt.notes.trim()
+        : `إتمام جلسة علاجية: ${appt.final_service_name}`;
+      const autoNotes = `تم توليد السجل تلقائياً عند حضور المريض وإتمام الموعد بتاريخ ${appt.date}`;
+
+      db.prepare(`
+        INSERT INTO dental_records (patient_id, doctor_id, tooth_number, diagnosis, treatment, cost, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        appt.patient_id,
+        appt.doctor_id,
+        'عام',
+        autoDiagnosis,
+        appt.final_service_name,
+        Number(appt.default_price || 0),
+        autoNotes
+      );
+
+      db.prepare(`
+        INSERT INTO notifications (user_id, title, message)
+        VALUES (?, ?, ?)
+      `).run(
+        appt.patient_id,
+        'تم إتمام زيارتك وإضافة السجل الطبي',
+        `تم تسجيل إتمام زيارتك (${appt.final_service_name}) بتاريخ ${appt.date} وإضافة السجل الطبي في ملفك تلقائياً.`
+      );
+    }
+  });
+
+  runAutomation();
+}
+
 module.exports = {
   createAppointment,
   completeVisitAndCreateRecord,
-  assignAppointmentService
+  assignAppointmentService,
+  autoCompleteAppointmentAndCreateRecord
 };

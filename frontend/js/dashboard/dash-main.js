@@ -1,6 +1,6 @@
 import { initAppShell, applyTranslations, apiRequest } from '../core/app-shell.js';
 import { initAppointmentsTab, loadAppointments } from './appointments-tab.js';
-import { initRecordsCatalogTabs, loadDentalRecordsTable, loadDoctorsTable, loadServicesTable } from './records-catalog-tab.js';
+import { initRecordsCatalogTabs, loadPatientsTable, loadDentalRecordsTable, loadDoctorsTable, loadServicesTable } from './records-catalog-tab.js';
 import { initAdminSettingsTab, loadClinicSettingsForm } from './admin-settings-tab.js';
 import { initFinanceProfileTabs, loadFinanceReport, loadProfileForm } from './finance-profile-tab.js';
 
@@ -44,10 +44,8 @@ async function checkAuth() {
     document.getElementById('user-role-badge').textContent = roleMap[currentUser.role] || currentUser.role;
 
     buildSidebarMenu(currentUser.role);
-    if (currentUser.role === 'patient') {
-      const bookBtn = document.getElementById('open-book-modal');
-      if (bookBtn) bookBtn.style.display = 'inline-flex';
-    }
+    const bookBtn = document.getElementById('open-book-modal');
+    if (bookBtn) bookBtn.style.display = 'inline-flex';
     fetchNotifications();
   } catch {
     window.location.href = '/login.html';
@@ -57,6 +55,11 @@ async function checkAuth() {
 function buildSidebarMenu(role) {
   const menu = document.getElementById('dash-nav-menu');
   let html = `<button type="button" class="dash-nav-btn active" data-tab="overview"><span>📊</span><span data-i18n="tab_overview">نظرة عامة</span></button>`;
+
+  if (role === 'admin' || role === 'doctor') {
+    html += `<button type="button" class="dash-nav-btn" data-tab="patients"><span>🧑‍⚕️</span><span data-i18n="tab_patients">إدارة المرضى</span></button>`;
+  }
+
   html += `<button type="button" class="dash-nav-btn" data-tab="appointments"><span>📅</span><span data-i18n="tab_appts">إدارة المواعيد</span></button>`;
 
   if (role === 'admin' || role === 'doctor') {
@@ -74,24 +77,28 @@ function buildSidebarMenu(role) {
   applyTranslations(document.documentElement.lang || 'ar');
 }
 
+window.switchDashboardTab = (tab) => {
+  const btn = document.querySelector(`.dash-nav-btn[data-tab="${tab}"]`);
+  if (!btn) return;
+  document.querySelectorAll('.dash-nav-btn').forEach((b) => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach((p) => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+
+  const titles = {
+    overview: 'نظرة عامة', patients: 'إدارة المرضى', appointments: 'إدارة المواعيد',
+    dental: 'السجلات الطبية', doctors: 'إدارة أطباء العيادة', services: 'إدارة الخدمات العلاجية',
+    settings: 'إعدادات الصفحة الرئيسية', profile: 'الملف الشخصي', finance: 'التقارير المالية والإيرادات'
+  };
+  document.getElementById('page-title').textContent = titles[tab] || 'لوحة التحكم';
+  loadTabData(tab);
+};
+
 function bindNavigation() {
   document.getElementById('dash-nav-menu').addEventListener('click', (e) => {
     const btn = e.target.closest('.dash-nav-btn[data-tab]');
     if (!btn) return;
-    const tab = btn.dataset.tab;
-
-    document.querySelectorAll('.dash-nav-btn').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.tab-pane').forEach((p) => p.classList.remove('active'));
-    document.getElementById(`tab-${tab}`).classList.add('active');
-
-    const titles = {
-      overview: 'نظرة عامة', appointments: 'إدارة المواعيد', dental: 'السجلات الطبية',
-      doctors: 'إدارة أطباء العيادة', services: 'إدارة الخدمات العلاجية',
-      settings: 'إعدادات الصفحة الرئيسية', profile: 'الملف الشخصي', finance: 'التقارير المالية والإيرادات'
-    };
-    document.getElementById('page-title').textContent = titles[tab] || 'لوحة التحكم';
-    loadTabData(tab);
+    window.switchDashboardTab(btn.dataset.tab);
   });
 
   document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -112,7 +119,8 @@ async function loadTabData(tab) {
         document.getElementById('stat-services').textContent = data.stats.servicesCount;
       }
     } catch {}
-  } else if (tab === 'appointments') loadAppointments();
+  } else if (tab === 'patients' && (currentUser.role === 'admin' || currentUser.role === 'doctor')) loadPatientsTable();
+  else if (tab === 'appointments') loadAppointments();
   else if (tab === 'dental') loadDentalRecordsTable();
   else if (tab === 'doctors' && currentUser.role === 'admin') loadDoctorsTable();
   else if (tab === 'services' && currentUser.role === 'admin') loadServicesTable();
@@ -162,37 +170,84 @@ window.markAllNotificationsRead = async () => {
   } catch {}
 };
 
+window.openBookingModalForPatient = async (preselectedPatientId = '') => {
+  const modal = document.getElementById('modal-book-appointment');
+  document.getElementById('book-date').min = new Date().toISOString().split('T')[0];
+  document.getElementById('book-appointment-form').reset();
+
+  const isStaff = currentUser.role === 'admin' || currentUser.role === 'doctor';
+  const patientGroup = document.getElementById('book-patient-group');
+  const patientSelect = document.getElementById('book-patient-id');
+  const doctorGroup = document.getElementById('book-doctor-group');
+  const doctorSelect = document.getElementById('book-doctor-id');
+
+  patientGroup.style.display = isStaff ? 'block' : 'none';
+  patientSelect.required = isStaff;
+  doctorGroup.style.display = currentUser.role === 'doctor' ? 'none' : 'block';
+
+  modal.style.display = 'block';
+
+  try {
+    const requests = [apiRequest('/api/doctors-list'), apiRequest('/api/services')];
+    if (isStaff) requests.push(apiRequest('/api/patients'));
+
+    const [docData, servData, patData] = await Promise.all(requests);
+
+    if (currentUser.role === 'doctor') {
+      doctorSelect.innerHTML = `<option value="${currentUser.id}" selected>${ClinicUI.escapeHtml(currentUser.name)}</option>`;
+    } else {
+      doctorSelect.innerHTML = (docData.doctors || [])
+        .map((d) => `<option value="${d.id}">${ClinicUI.escapeHtml(d.name)} (${ClinicUI.escapeHtml(d.specialty || 'أسنان')})</option>`)
+        .join('') || '<option value="">لا يوجد أطباء</option>';
+    }
+
+    document.getElementById('book-service-id').innerHTML = (servData.services || [])
+      .map((s) => `<option value="${s.id}">${ClinicUI.escapeHtml(s.name)} - ${s.price || 0} دينار (${s.duration || 30} دقيقة)</option>`)
+      .join('') || '<option value="">لا توجد خدمات</option>';
+
+    if (isStaff && patData) {
+      patientSelect.innerHTML = (patData.patients || [])
+        .map((p) => `<option value="${p.id}" ${String(p.id) === String(preselectedPatientId) ? 'selected' : ''}>${ClinicUI.escapeHtml(p.name)} ${p.phone ? `(${ClinicUI.escapeHtml(p.phone)})` : ''}</option>`)
+        .join('') || '<option value="">لا يوجد مرضى مسجلون</option>';
+    }
+  } catch {}
+};
+
 function bindPatientBookingModal() {
   const modal = document.getElementById('modal-book-appointment');
-  document.getElementById('open-book-modal')?.addEventListener('click', async () => {
-    document.getElementById('book-date').min = new Date().toISOString().split('T')[0];
-    document.getElementById('book-appointment-form').reset();
-    modal.style.display = 'block';
-    try {
-      const [docData, servData] = await Promise.all([apiRequest('/api/doctors-list'), apiRequest('/api/services')]);
-      document.getElementById('book-doctor-id').innerHTML = (docData.doctors || []).map((d) => `<option value="${d.id}">${d.name} (${d.specialty || 'أسنان'})</option>`).join('') || '<option value="">لا يوجد أطباء</option>';
-      document.getElementById('book-service-id').innerHTML = (servData.services || []).map((s) => `<option value="${s.id}">${s.name} - ${s.price || 0} دينار (${s.duration || 30} دقيقة)</option>`).join('') || '<option value="">لا توجد خدمات</option>';
-    } catch {}
+  document.getElementById('open-book-modal')?.addEventListener('click', () => {
+    window.openBookingModalForPatient('');
   });
+
   document.getElementById('close-book-modal')?.addEventListener('click', () => { modal.style.display = 'none'; });
 
   document.getElementById('book-appointment-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const isStaff = currentUser.role === 'admin' || currentUser.role === 'doctor';
+    const payload = {
+      doctor_id: currentUser.role === 'doctor' ? currentUser.id : document.getElementById('book-doctor-id').value,
+      service_id: document.getElementById('book-service-id').value,
+      date: document.getElementById('book-date').value,
+      start_time: document.getElementById('book-time').value,
+      notes: document.getElementById('book-notes')?.value || ''
+    };
+    if (isStaff) {
+      payload.patient_id = document.getElementById('book-patient-id').value;
+    }
+
     try {
-      await apiRequest('/api/appointments', {
+      const res = await apiRequest('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          doctor_id: document.getElementById('book-doctor-id').value,
-          service_id: document.getElementById('book-service-id').value,
-          date: document.getElementById('book-date').value,
-          start_time: document.getElementById('book-time').value
-        })
+        body: JSON.stringify(payload)
       });
-      ClinicUI.showToast('تم حجز الموعد بنجاح وهو بانتظار التأكيد');
+      ClinicUI.showToast(res.message || 'تم حجز الموعد بنجاح');
       modal.style.display = 'none';
       e.target.reset();
       loadAppointments();
+      if (document.getElementById('tab-patients')?.classList.contains('active')) {
+        loadPatientsTable();
+      }
     } catch (err) {
       ClinicUI.showToast(err.message, 'error');
     }

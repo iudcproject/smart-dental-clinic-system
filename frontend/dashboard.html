@@ -71,6 +71,23 @@
           </div>
         </section>
 
+        <!-- TAB 1.5: PATIENTS -->
+        <section id="tab-patients" class="tab-pane animate-enter">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
+            <h2 style="margin: 0; font-size: var(--text-xl);">إدارة المرضى وملفاتهم</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: center; width: 100%; max-width: 680px;">
+              <input type="search" id="patients-search-input" class="form-input" placeholder="ابحث بالاسم، رقم الهاتف، البريد، أو رقم المريض..." oninput="filterPatientsTable()" style="flex: 1; min-width: 240px;">
+              <button type="button" class="btn btn-primary btn-sm" id="open-add-patient-modal">+ إضافة مريض جديد</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead><tr><th>الرقم</th><th>اسم المريض</th><th>البريد الإلكتروني</th><th>رقم الهاتف</th><th>النشاط المرتبط</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr></thead>
+              <tbody id="patients-tbody"><tr><td colspan="7" style="text-align: center; padding: var(--space-6);">جاري تحميل بيانات المرضى...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- TAB 2: APPOINTMENTS -->
         <section id="tab-appointments" class="tab-pane animate-enter">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);">
@@ -240,30 +257,77 @@
 
         <!-- TAB 8: FINANCE -->
         <section id="tab-finance" class="tab-pane animate-enter">
-          <h2 style="margin: 0 0 var(--space-4); font-size: var(--text-xl);">التقارير المالية وإدارة الإيرادات</h2>
-          <div class="card" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: center;">
-            <div><label class="form-label" style="font-size: 12px;">من تاريخ:</label><input type="date" id="fin-date-from" class="form-input"></div>
-            <div><label class="form-label" style="font-size: 12px;">إلى تاريخ:</label><input type="date" id="fin-date-to" class="form-input"></div>
-            <button type="button" class="btn btn-primary btn-sm" onclick="loadFinanceReport()">تصفية التقرير</button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="resetFinanceFilter()">عرض الكل</button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="exportFinanceCSV()">📥 تصدير Excel (CSV)</button>
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: var(--space-4);">
+            <h2 style="margin: 0; font-size: var(--text-xl);">التقارير المالية وتحليل الإيرادات</h2>
+            <button type="button" class="btn btn-primary btn-sm" onclick="exportFinanceCSV()" style="display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>تصدير التقرير (CSV)</span>
+            </button>
           </div>
-          <div class="stats-grid" style="width: 100%;">
-            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">إجمالي الإيرادات المحصلة (المواعيد المؤكدة/المكتملة)</span><h2 id="finance-total-revenue" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl); color: var(--text-brand);">0 دينار</h2></div>
-            <div class="stat-card"><span style="color: var(--text-muted); font-size: var(--text-xs);">عدد الجلسات المحتسبة</span><h2 id="finance-paid-count" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2></div>
-          </div>
-          <div class="card" style="margin-top: 1.5rem;">
-            <h3 style="font-size: var(--text-lg); margin-bottom: 1rem;">الإيرادات حسب الخدمات العلاجية</h3>
-            <div class="table-container">
-              <table class="data-table">
-                <thead><tr><th>اسم الخدمة</th><th>عدد الحجوزات</th><th>إجمالي الإيراد</th></tr></thead>
-                <tbody id="finance-services-tbody"><tr><td colspan="3" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr></tbody>
-              </table>
+
+          <div class="card fin-toolbar">
+            <div class="fin-toolbar-field">
+              <label class="form-label" for="fin-date-from" style="font-size: 12px;">من تاريخ</label>
+              <input type="date" id="fin-date-from" class="form-input">
+            </div>
+            <div class="fin-toolbar-field">
+              <label class="form-label" for="fin-date-to" style="font-size: 12px;">إلى تاريخ</label>
+              <input type="date" id="fin-date-to" class="form-input">
+            </div>
+            <div class="fin-toolbar-field" style="flex: 1; min-width: 180px;">
+              <label class="form-label" for="fin-search-input" style="font-size: 12px;">بحث سريع (مريض، طبيب، خدمة)</label>
+              <input type="search" id="fin-search-input" class="form-input" placeholder="اكتب للبحث في السجل المالي..." oninput="filterFinanceTransactions()">
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="loadFinanceReport()">تطبيق التصفية</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="resetFinanceFilter()">إعادة ضبط</button>
             </div>
           </div>
+
+          <div class="stats-grid" style="width: 100%;">
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs); font-weight: 600;">إجمالي الإيرادات المحصلة</span>
+              <h2 id="finance-total-revenue" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl); color: var(--text-brand);">0 دينار</h2>
+            </div>
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs); font-weight: 600;">الإيرادات المتوقعة (مواعيد قادمة)</span>
+              <h2 id="finance-expected-revenue" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl); color: var(--status-warning-text);">0 دينار</h2>
+            </div>
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs); font-weight: 600;">عدد الجلسات المكتملة</span>
+              <h2 id="finance-paid-count" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0</h2>
+            </div>
+            <div class="stat-card">
+              <span style="color: var(--text-muted); font-size: var(--text-xs); font-weight: 600;">متوسط قيمة الجلسة</span>
+              <h2 id="finance-avg-revenue" style="margin: var(--space-1) 0 0; font-size: var(--text-2xl);">0 دينار</h2>
+            </div>
+          </div>
+
+          <div class="fin-analytics-grid">
+            <div class="card">
+              <h3 style="font-size: var(--text-base); margin: 0 0 1rem; text-align: start;">توزيع الإيرادات حسب الخدمات العلاجية</h3>
+              <div class="table-container" style="margin: 0 !important;">
+                <table class="data-table">
+                  <thead><tr><th>الخدمة</th><th>الجلسات</th><th>النسبة والإيراد</th></tr></thead>
+                  <tbody id="finance-services-tbody"><tr><td colspan="3" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="font-size: var(--text-base); margin: 0 0 1rem; text-align: start;">أداء الإيرادات حسب الأطباء</h3>
+              <div class="table-container" style="margin: 0 !important;">
+                <table class="data-table">
+                  <thead><tr><th>الطبيب</th><th>الجلسات</th><th>النسبة والإيراد</th></tr></thead>
+                  <tbody id="finance-doctors-tbody"><tr><td colspan="3" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
           <div class="card" style="margin-top: 1.5rem;">
-            <h3 style="font-size: var(--text-lg); margin-bottom: 1rem;">سجل المعاملات والجلسات المالية التفصيلي</h3>
-            <div class="table-container">
+            <h3 style="font-size: var(--text-base); margin: 0 0 1rem; text-align: start;">سجل المعاملات والجلسات المالية التفصيلي</h3>
+            <div class="table-container" style="margin: 0 !important;">
               <table class="data-table">
                 <thead><tr><th>التاريخ</th><th>المريض</th><th>الطبيب</th><th>الخدمة</th><th>الحالة</th><th>المبلغ</th></tr></thead>
                 <tbody id="finance-transactions-tbody"><tr><td colspan="6" style="text-align: center; padding: 1rem;">جاري التحميل...</td></tr></tbody>
@@ -276,6 +340,25 @@
   </div>
 
   <!-- MODALS -->
+
+   <div id="modal-patient" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 32rem; height: fit-content; z-index: 100; display: none;">
+    <h3 id="patient-modal-title" style="margin-top: 0;">إضافة مريض جديد</h3>
+    <form id="add-patient-form">
+      <input type="hidden" id="edit-patient-id">
+      <div class="form-group"><label class="form-label">الاسم الكامل للمريض</label><input type="text" id="pat-name" class="form-input" required></div>
+      <div class="form-group"><label class="form-label">البريد الإلكتروني</label><input type="email" id="pat-email" class="form-input" dir="ltr" required></div>
+      <div class="form-group"><label class="form-label">رقم الهاتف</label><input type="tel" id="pat-phone" class="form-input" dir="ltr" placeholder="079xxxxxxx"></div>
+      <div class="form-group">
+        <label class="form-label">كلمة المرور <span id="pat-pass-hint" style="font-size: 11px; color: var(--text-muted); font-weight: 400;"></span></label>
+        <input type="password" id="pat-pass" class="form-input" placeholder="6 أحرف على الأقل">
+      </div>
+      <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
+        <button type="button" class="btn btn-secondary" id="close-patient-modal">إلغاء</button>
+        <button type="submit" class="btn btn-primary">حفظ بيانات المريض</button>
+      </div>
+    </form>
+  </div>
+
   <div id="modal-doctor" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 32rem; height: fit-content; z-index: 100; display: none;">
     <h3 style="margin-top: 0;">إضافة طبيب جديد</h3>
     <form id="add-doctor-form">
@@ -291,16 +374,39 @@
     </form>
   </div>
 
-  <div id="modal-book-appointment" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 36rem; height: fit-content; z-index: 100; display: none;">
-    <h3 style="margin-top: 0;">حجز موعد جديد في العيادة</h3>
+  <div id="modal-book-appointment" class="card" style="position: fixed; inset: 0; margin: auto; max-width: 36rem; height: fit-content; z-index: 100; display: none; max-height: 92vh; overflow-y: auto;">
+    <h3 id="book-modal-title" style="margin-top: 0;">حجز موعد جديد في العيادة</h3>
     <form id="book-appointment-form">
-      <div class="form-group"><label class="form-label">اختر الطبيب المعالج</label><select id="book-doctor-id" class="form-input" required><option value="">جاري تحميل الأطباء...</option></select></div>
-      <div class="form-group"><label class="form-label">اختر الخدمة العلاجية</label><select id="book-service-id" class="form-input" required><option value="">جاري تحميل الخدمات...</option></select></div>
-      <div class="form-group"><label class="form-label">تاريخ الموعد</label><input type="date" id="book-date" class="form-input" required></div>
-      <div class="form-group"><label class="form-label">وقت الحجز</label><input type="time" id="book-time" class="form-input" required><small style="color: var(--text-muted);">يرجى الحجز قبل بـ 3 ساعات على الأقل ضمن أوقات الدوام.</small></div>
+      <div class="form-group" id="book-patient-group" style="display: none;">
+        <label class="form-label" for="book-patient-id">اختر المريض</label>
+        <select id="book-patient-id" class="form-input"><option value="">جاري تحميل قائمة المرضى...</option></select>
+      </div>
+      <div class="form-group" id="book-doctor-group">
+        <label class="form-label" for="book-doctor-id">اختر الطبيب المعالج</label>
+        <select id="book-doctor-id" class="form-input" required><option value="">جاري تحميل الأطباء...</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="book-service-id">اختر الخدمة العلاجية</label>
+        <select id="book-service-id" class="form-input" required><option value="">جاري تحميل الخدمات...</option></select>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="form-group">
+          <label class="form-label" for="book-date">تاريخ الموعد</label>
+          <input type="date" id="book-date" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="book-time">وقت الحجز</label>
+          <input type="time" id="book-time" class="form-input" required>
+        </div>
+      </div>
+      <small id="book-time-hint" style="display: block; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 1rem;">أوقات العمل الرسمية: 09:00 صباحاً حتى 08:00 مساءً.</small>
+      <div class="form-group">
+        <label class="form-label" for="book-notes">ملاحظات طبية أو تشخيص مبدئي (اختياري)</label>
+        <input type="text" id="book-notes" class="form-input" placeholder="مثال: ألم في الضرس العلوي الأيمن">
+      </div>
       <div style="display: flex; gap: var(--space-2); justify-content: flex-end; margin-top: var(--space-4);">
         <button type="button" class="btn btn-secondary" id="close-book-modal">إلغاء</button>
-        <button type="submit" class="btn btn-primary">تأكيد حجز الموعد</button>
+        <button type="submit" class="btn btn-primary">تأكيد وحفظ الموعد</button>
       </div>
     </form>
   </div>
@@ -325,7 +431,7 @@
     <form id="add-dental-form">
       <input type="hidden" id="edit-dental-id">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <div class="form-group"><label class="form-label">رقم معرف المريض (ID)</label><input type="number" id="dental-patient-id" class="form-input" placeholder="مثال: 3" required></div>
+        <div class="form-group"><label class="form-label" for="dental-patient-id">اختر المريض</label><select id="dental-patient-id" class="form-input" required><option value="">جاري تحميل قائمة المرضى...</option></select></div>
         <div class="form-group"><label class="form-label">رقم السن</label><input type="text" id="dental-tooth" class="form-input" placeholder="مثال: 11, 26, 38..." required></div>
       </div>
       <div class="form-group"><label class="form-label">التشخيص الطبي</label><input type="text" id="dental-diagnosis" class="form-input" required></div>
